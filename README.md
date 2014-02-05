@@ -6,5 +6,8 @@ GO-ZhihuDaily
 
 以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
 
-( ⊙o⊙ )哇，我弱爆了有木有 %>_<%
+( ⊙o⊙ )哇，这么多 '/'  
+弱爆了有木有
+
+( >﹏<。)～呜呜呜……
 
