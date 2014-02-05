@@ -1,0 +1,14 @@
+{{define "content"}}
+{{template "header"}}
+
+<ul id ="box" class="box">
+	{{range .}}
+	<a href="{{.share_image}}" >
+		<li><img src={{ .share_image }} class="image" /></li>
+	</a>
+	{{end}}
+</ul>
+
+{{template "footer"}} 
+
+{{end}}

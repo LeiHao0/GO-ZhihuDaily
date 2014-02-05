@@ -1,0 +1,22 @@
+ul,li{ 
+    padding:0;
+    margin:0;
+    overflow:hidden;
+}
+li{ 
+    list-style:none;
+}
+img{ 
+    border:10;
+}
+.box{
+   width:100%;
+}
+.box li{ 
+    float:left; 
+    height:200px;
+    width:300px;
+    margin-right:10px;
+}
+
+.image { width: 100%;}
