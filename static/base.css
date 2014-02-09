@@ -6,17 +6,66 @@ ul,li{
 li{ 
     list-style:none;
 }
-img{ 
-    border:10;
+
+.image { 
+    width: 100%;
 }
+
 .box{
    width:100%;
 }
+
 .box li{ 
     float:left; 
-    height:200px;
+    height:185px;
     width:300px;
-    margin-right:10px;
+    margin-top: 5px;
+    margin-left: 5px;
 }
 
-.image { width: 100%;}
+.date {
+    margin-top: 5px;
+    color: white;
+    height: 50px;
+    width: 100%;
+    background-color: #009dd7;
+    padding-top: 13px;
+    padding-left: 40px;
+
+    font-size: 30px;
+
+    font-weight: bold;
+
+    font-family: 'Helvetica Neue',Helvetica,Arial,Sans-serif;
+}
+
+.pages{
+    padding-top: 20px;
+    text-align: center;
+
+    font-family: 'Helvetica Neue',Helvetica,Arial,Sans-serif;
+    font-size: 20px;
+}
+
+a{
+    color: dodgerblue;
+    text-decoration:none;
+}
+
+#foot{
+    text-align: center;
+    margin-top: 10px;
+    /*
+    height: 30px;*/
+    width: 100%;
+    /*position:fixed;
+    _position:absolute;
+    bottom: 0px;
+    _bottom:0px;
+    _margin-top:expression(this.style.pixelHeight+document.documentElement.scrollTop);*/
+
+}  
+
+
+
+

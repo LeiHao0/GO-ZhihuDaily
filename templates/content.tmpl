@@ -2,13 +2,44 @@
 {{template "header"}}
 
 
-<ul id ="box" class="box">
-	{{range .}}
-	<a href="{{.share_image}}" >
-		<li><img src={{ .share_image }} class="image" /></li>
-	</a>
-	{{end}}
-</ul>
+{{range .}}
+
+{{with .Useddata}}
+{{range .}}
+
+
+<div class="date">
+	{{.Date}}
+</div>
+
+<div>
+	<ul id ="box" class="box">
+		{{range .News}}
+		<a href="/url/{{.share_image}}" >
+			<li>
+				<img src={{ .share_image }} class="image" />
+			</li>
+		</a>
+		{{end}}
+	</ul>
+</div>
+
+{{end}}
+
+{{end}}
+
+
+{{with .Pagemark}}
+<div class="pages">
+
+{{range .}}
+<a href="/date/{{.}}">{{.}}</a>
+{{end}}
+</div>
+
+{{end}}
+
+{{end}}
 
 {{template "footer"}} 
 

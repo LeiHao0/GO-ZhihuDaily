@@ -12,10 +12,7 @@ import (
 
 func main() {
 
-	// initDB()
-	// getBeforeData()
-
-	QueryData()
+	// QueryData()
 
 }
 
@@ -54,10 +51,11 @@ func QueryData() map[int]string {
 	return memoryCache
 }
 
-func getBeforeData() {
+func GetBeforeData() {
 
-	date, _ := time.Parse("20060102", "20140206")
-	firstDate, _ := time.Parse("20060102", "20130519")
+	// string -> time
+	date, _ := time.Parse("20060102", "20140209")
+	firstDate, _ := time.Parse("20060102", "20130520")
 
 	for ; date.After(firstDate); date = date.AddDate(0, 0, -1) {
 
@@ -65,12 +63,19 @@ func getBeforeData() {
 
 		fmt.Println(url)
 		data := getData(url)
-		dateInt, _ := strconv.Atoi(date.AddDate(0, 0, -1).Format("20060102"))
+		dateInt, _ := strconv.Atoi(date.Format("20060102"))
 		writeToDB(dateInt, data)
 	}
 }
 
-func initDB() {
+func TodayData() string {
+	// today := time.Now().Format("20060102")
+	url := "http://news.at.zhihu.com/api/1.2/news/latest"
+
+	return getData(url)
+}
+
+func InitDB() {
 	db, err := sql.Open("sqlite3", "./main.db")
 	checkErr(err)
 	//插入数据

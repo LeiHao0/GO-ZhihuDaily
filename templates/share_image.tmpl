@@ -1,11 +1,25 @@
 {{define "share_image"}}
-{{template "header"}}
+
+<html>
+<head>
+	<title>知乎日报</title>
+	<style type="text/css">
+	.image { 
+		text-align: center;
+		width: 100%;
+	}
+	</style>
+</head> 
+<body>
 
 
 
-<img src={{ . }} class="image" alt={{ . }} />
+	<div class="image">
+		<img src={{ . }}  alt="img" />
+	</div>
 
 
-{{template "footer"}} 
+</body>
+</html>
 
 {{end}}
