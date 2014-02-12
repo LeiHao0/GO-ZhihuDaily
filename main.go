@@ -34,25 +34,36 @@ func zhihuDailyJson(str string) UsedData {
 	return UsedData{Date: date, News: news}
 }
 
-func renderPages() map[int]FinalData {
+func renderPages(tatal int) map[int]FinalData {
 	memoreyCache := QueryData()
 
 	page := make(map[int]FinalData)
 
 	var pagemark []int
-	for i := len(memoreyCache) / 7; i > 0; i -= 1 {
+	for i := len(memoreyCache) / tatal; i > 0; i -= 1 {
 		pagemark = append(pagemark, i)
 	}
 
 	date := time.Now()
 
-	i := len(memoreyCache) / 7
+	i := len(memoreyCache) / tatal
 	for ; i > 0; i -= 1 {
 		var finaldata FinalData
 		var useddata []UsedData
-		for j := 0; j < 7; j++ {
+		for j := 0; j < tatal; j++ {
 			temp, _ := strconv.Atoi(date.Format("20060102"))
-			useddata = append(useddata, zhihuDailyJson(memoreyCache[temp]))
+
+			data, ok := memoreyCache[temp]
+			if ok {
+				useddata = append(useddata, zhihuDailyJson(data))
+			} else {
+				url := "http://news.at.zhihu.com/api/1.2/news/before/" + date.Format("20060102")
+
+				data = getData(url)
+				dateInt, _ := strconv.Atoi(date.Format("20060102"))
+				writeToDB(dateInt, data)
+				useddata = append(useddata, zhihuDailyJson(data))
+			}
 			date = date.AddDate(0, 0, -1)
 		}
 		finaldata.Useddata = useddata
@@ -69,9 +80,8 @@ func initDB() {
 }
 
 func main() {
-	fmt.Println("start main()")
 	// initDB()
-	pages := renderPages()
+	pages := renderPages(3)
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
@@ -148,7 +158,6 @@ func GetBeforeData() {
 
 		url := "http://news.at.zhihu.com/api/1.2/news/before/" + date.Format("20060102")
 
-		fmt.Println(url)
 		data := getData(url)
 		dateInt, _ := strconv.Atoi(date.Format("20060102"))
 		writeToDB(dateInt, data)
