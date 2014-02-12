@@ -87,6 +87,8 @@ func main() {
 	m.Use(martini.Static("static"))
 	m.Use(render.Renderer())
 
+	http.ListenAndServe("0.0.0.0:8080", m)
+
 	// todayData := zhihuDailyJson(mydatabase.TodayData())
 	// finalData = []interface{}{todayData}
 
