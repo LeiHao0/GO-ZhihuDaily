@@ -1,46 +1,49 @@
 {{define "content"}}
 {{template "header"}}
 
+<div id="content">
 
-{{range .}}
+	{{range .}}
 
-{{with .Useddata}}
-{{range .}}
+	{{with .Useddata}}
+	{{range .}}
 
 
-<div class="date">
-	{{.Date}}
-</div>
 
-<div>
-	<ul id ="box" class="box">
-		{{range .News}}
-		<a href="/url/{{.share_image}}" >
-			<li>
-				<img src={{ .share_image }} class="image" />
-			</li>
-		</a>
+	<div class="date">
+		{{.Date}}
+	</div>
+
+	<div>
+		<ul id ="box" class="box">
+			{{range .News}}
+			<a href="/url/{{.share_image}}" >
+				<li>
+					<img src={{ .share_image }} class="image" />
+				</li>
+			</a>
+			{{end}}
+		</ul>
+	</div>
+
+	{{end}}
+
+	{{end}}
+
+
+	{{with .Pagemark}}
+	<div class="pages">
+
+		{{range .}}
+		<a href="/date/{{.}}">{{.}}</a>
 		{{end}}
-	</ul>
+	</div>
+
+	{{end}}
+
+	{{end}}
+
 </div>
-
-{{end}}
-
-{{end}}
-
-
-{{with .Pagemark}}
-<div class="pages">
-
-{{range .}}
-<a href="/date/{{.}}">{{.}}</a>
-{{end}}
-</div>
-
-{{end}}
-
-{{end}}
-
 {{template "footer"}} 
 
 {{end}}

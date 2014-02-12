@@ -9,6 +9,7 @@ li{
 
 .image { 
     width: 100%;
+    text-align: center;
 }
 
 .box{
@@ -26,19 +27,23 @@ li{
 .date {
     margin-top: 5px;
     color: white;
-    height: 50px;
+    height: 40px;
     width: 100%;
     background-color: #009dd7;
     padding-top: 13px;
     padding-left: 40px;
 
-    font-size: 30px;
+    font-size: 25px;
 
     font-weight: bold;
 
     font-family: 'Helvetica Neue',Helvetica,Arial,Sans-serif;
 }
 
+#content {
+
+    margin-top: 60px;
+}
 .pages{
     padding-top: 20px;
     text-align: center;
@@ -55,17 +60,24 @@ a{
 #foot{
     text-align: center;
     margin-top: 10px;
-    /*
-    height: 30px;*/
     width: 100%;
-    /*position:fixed;
-    _position:absolute;
-    bottom: 0px;
-    _bottom:0px;
-    _margin-top:expression(this.style.pixelHeight+document.documentElement.scrollTop);*/
+}
 
-}  
 
+.global-header {
+    width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 9990;
+    height: 50px;
+    background-color: #009dd7;
+    color: #FaFcFe;
+}
+
+.main-wrap{
+    height: 50px;
+    margin-left: 100px;
+}
 
 
 
