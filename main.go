@@ -88,10 +88,7 @@ func main() {
 
 	lastUpdate := time.Now()
 
-	// http.ListenAndServe("0.0.0.0:8000", m)
-
-	// todayData := zhihuDailyJson(mydatabase.TodayData())
-	// finalData = []interface{}{todayData}
+	//http.ListenAndServe("0.0.0.0:8000", m)
 
 	m.Get("/", func(r render.Render) {
 		if time.Since(lastUpdate) > time.Hour {
