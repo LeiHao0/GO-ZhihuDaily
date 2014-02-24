@@ -88,8 +88,6 @@ func main() {
 
 	lastUpdate := time.Now()
 
-	//http.ListenAndServe("0.0.0.0:8000", m)
-
 	m.Get("/", func(r render.Render) {
 		if time.Since(lastUpdate) > time.Hour {
 			pages = renderPages(5)
@@ -109,6 +107,7 @@ func main() {
 		r.HTML(200, "share_image", params["_1"])
 	})
 
+	http.ListenAndServe("0.0.0.0:8000", m)
 	m.Run()
 }
 
