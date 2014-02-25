@@ -34,8 +34,7 @@ func zhihuDailyJson(str string) UsedData {
 	return UsedData{Date: date, News: news}
 }
 
-func renderPages(days int) map[int]FinalData {
-	memoreyCache := QueryData()
+func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 
 	pages := make(map[int]FinalData)
 	var pagemark []int
@@ -80,7 +79,10 @@ func atoi(s string) int {
 
 func main() {
 
-	pages := renderPages(4)
+	memoreyCache := QueryData()
+	days := 4
+
+	pages := renderPages(days, memoreyCache)
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
@@ -89,8 +91,8 @@ func main() {
 	lastUpdate := time.Now()
 
 	m.Get("/", func(r render.Render) {
-		if time.Since(lastUpdate) > time.Hour {
-			pages = renderPages(5)
+		if time.Since(lastUpdate) > (time.Hour * 2) {
+			pages = renderPages(days, memoreyCache)
 		}
 		r.HTML(200, "content", []interface{}{pages[1]})
 	})
@@ -175,10 +177,12 @@ func InitDB() {
 	db, err := sql.Open("sqlite3", "./main.db")
 	checkErr(err)
 	//插入数据
-	stmt, _ := db.Prepare("CREATE TABLE `datainfo` (`date` INTEGER PRIMARY KEY, `data` TEXT NULL)")
+	stmt, err := db.Prepare("CREATE TABLE `datainfo` (`date` INTEGER PRIMARY KEY, `data` TEXT NULL)")
 	checkErr(err)
 
 	stmt.Exec()
+
+	db.Close()
 }
 
 func writeToDB(date int, data string) {
@@ -196,6 +200,8 @@ func writeToDB(date int, data string) {
 	checkErr(err)
 
 	fmt.Println(id)
+
+	db.Close()
 }
 
 func checkErr(err error) {
