@@ -17,10 +17,20 @@ GO-ZhihuDaily
 
 ---
 
+1. 感谢 @[faceair](https://github.com/faceair/zhihudaily)，他做的最早的web版（PHP不懂的说）
+2. SQLite存储API返回的JSON数据，减小访问官网次数
+3. 每小时更新一次当天数据
+4. [Martini](https://github.com/codegangsta/martini) 框架
+5. 用的朋友的VPS（貌似十分不稳定，动不动就502了，寄人篱下的痛苦 ｡･ﾟ･(*ﾉД`*)･ﾟ･｡ ）
+
+---
+
 以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
 
 ( ⊙o⊙ )哇，这么多 '/'  
 弱爆了有木有
 
 ( >﹏<。)～呜呜呜……
+
+---
 
