@@ -93,6 +93,7 @@ func main() {
 
 	m.Get("/", func(r render.Render) {
 		if time.Since(lastUpdate) > (time.Hour * 2) {
+			lastUpdate = time.Now()
 			pages = renderPages(days, memoreyCache)
 		}
 		r.HTML(200, "content", []interface{}{pages[1]})
