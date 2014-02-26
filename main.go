@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+// 20060102 15:04:05
+
 type UsedData struct {
 	Date string
 	News []interface{}
@@ -35,7 +37,6 @@ func zhihuDailyJson(str string) UsedData {
 }
 
 func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
-
 	pages := make(map[int]FinalData)
 	var pagemark []int
 	date := time.Now()
@@ -48,10 +49,6 @@ func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 
 		var finaldata FinalData
 		var useddata []UsedData
-
-		if i == 1 {
-			useddata = append(useddata, zhihuDailyJson(todayData()))
-		}
 
 		for j := 0; j < days; j++ {
 			key := date.Format("20060102")
@@ -73,36 +70,87 @@ func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 	return pages
 }
 
+func updatePages(pages map[int]FinalData) {
+
+	updatepage := 1
+
+	oriUseddata := pages[updatepage].Useddata
+	oriPagemark := pages[updatepage].Pagemark
+
+	var finaldata FinalData
+	var useddata []UsedData
+
+	useddata = append(useddata, zhihuDailyJson(todayData()))
+	index := 0
+	if len(oriUseddata) > 4 {
+		index = 1
+	}
+	useddata = append(useddata, oriUseddata[index:]...)
+
+	finaldata.Useddata = useddata
+	finaldata.Pagemark = oriPagemark
+
+	delete(pages, updatepage)
+
+	pages[updatepage] = finaldata
+}
+
 func atoi(s string) int {
 	dateInt, _ := strconv.Atoi(s)
 	return dateInt
 }
 
-func main() {
+func autoUpdate() map[int]FinalData {
 
-	memoreyCache := QueryData()
+	// init
 	days := 4
-
+	memoreyCache := QueryData()
 	pages := renderPages(days, memoreyCache)
+
+	updatePages(pages)
+	lastUpdate := time.Now()
+
+	ticker := time.NewTicker(time.Hour) // update every per hour
+	go func() {
+		for t := range ticker.C {
+
+			// Tomorrow 7 am
+			if tomorrowSeven(time.Now(), lastUpdate) {
+				lastUpdate = t
+				pages = nil
+				pages = renderPages(days, memoreyCache)
+				//fmt.Println("autoRenderPages at", t)
+			}
+
+			updatePages(pages)
+			//fmt.Println("autoUpdate at", t)
+		}
+	}()
+
+	return pages
+}
+
+func tomorrowSeven(now time.Time, lastUpdate time.Time) bool {
+	return (time.Now().Format("02") > lastUpdate.Format("02")) && (time.Now().Format("15") > lastUpdate.Format("15"))
+}
+
+func main() {
+	//fmt.Println("main()")
+
+	pages := autoUpdate()
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
 	m.Use(render.Renderer())
 
-	lastUpdate := time.Now()
-
 	m.Get("/", func(r render.Render) {
-		if time.Since(lastUpdate) > (time.Hour * 2) {
-			lastUpdate = time.Now()
-			pages = renderPages(days, memoreyCache)
-		}
+
 		r.HTML(200, "content", []interface{}{pages[1]})
 	})
 
 	m.Get("/date/:id", func(params martini.Params, r render.Render) {
 
 		id := atoi(params["id"])
-
 		r.HTML(200, "content", []interface{}{pages[id]})
 	})
 
@@ -122,32 +170,13 @@ func getData(url string) string {
 	if err != nil {
 		// handle error
 		fmt.Println(err)
+		return ""
 	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 
 	return string(body)
-
-}
-
-func QueryData() map[int]string {
-
-	memoryCache := make(map[int]string)
-
-	db, err := sql.Open("sqlite3", "./main.db")
-	checkErr(err)
-
-	rows, err := db.Query("SELECT * FROM datainfo")
-	checkErr(err)
-
-	for rows.Next() {
-		var date int
-		var data string
-		err = rows.Scan(&date, &data)
-		memoryCache[date] = data
-	}
-
-	return memoryCache
 }
 
 func getAllData() {
@@ -185,6 +214,28 @@ func InitDB() {
 	stmt.Exec()
 
 	db.Close()
+}
+
+func QueryData() map[int]string {
+
+	memoryCache := make(map[int]string)
+
+	db, err := sql.Open("sqlite3", "./main.db")
+	checkErr(err)
+
+	rows, err := db.Query("SELECT * FROM datainfo")
+	checkErr(err)
+
+	db.Close()
+
+	for rows.Next() {
+		var date int
+		var data string
+		err = rows.Scan(&date, &data)
+		memoryCache[date] = data
+	}
+
+	return memoryCache
 }
 
 func writeToDB(date int, data string) {
