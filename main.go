@@ -59,6 +59,7 @@ func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 			data, ok := memoreyCache[atoi(key)]
 			if !ok {
 				data = getBeforeData(key)
+				memoreyCache[atoi(key)] = data
 			}
 
 			useddata = append(useddata, zhihuDailyJson(data))
