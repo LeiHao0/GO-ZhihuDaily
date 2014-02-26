@@ -148,7 +148,7 @@ func main() {
 		r.HTML(200, "content", []interface{}{pages[1]})
 	})
 
-	m.Get("/date/:id", func(params martini.Params, r render.Render) {
+	m.Get("/page/:id", func(params martini.Params, r render.Render) {
 
 		id := atoi(params["id"])
 		r.HTML(200, "content", []interface{}{pages[id]})
