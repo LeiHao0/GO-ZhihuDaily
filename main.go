@@ -159,6 +159,10 @@ func main() {
 		r.HTML(200, "share_image", params["_1"])
 	})
 
+	m.Get("/date/**", func(r render.Render) {
+		r.HTML(200, "content", []interface{}{pages[1]})
+	})
+
 	http.ListenAndServe("0.0.0.0:8000", m)
 	m.Run()
 }
