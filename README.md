@@ -3,7 +3,39 @@ GO-ZhihuDaily
 
 #[知乎日报 Web版（GoLang实现）](http://zhihudaily.ahorn.me/)
 
+以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
+
+( ⊙o⊙ )哇，这么多 '/'  
+弱爆了有木有
+
+域名、VPS都是蹭朋友的
+太惨了
+
+( >﹏<。)～呜呜呜……
+
+
 ---
+
+1. 感谢 @[faceair](https://github.com/faceair/zhihudaily)，他做了最早的web版(PHP)（API就是从他的代码里找到的）
+2. SQLite存储API返回的JSON数据，减小访问官网次数
+3. 每小时更新一次当天数据
+4. [Martini](https://github.com/codegangsta/martini) 框架
+5. 蹭朋友的VPS [貌似十分不稳定，动不动就502了，（好吧，是我的小程序不稳定）]  
+
+---
+
+2014-02-24
+
+图省事先用图片代替了
+
+后面考虑用文字，这样复制粘贴也容易点
+
+好吧，是我HTML/CSS不会啊，写起来步步维艰，现在真心做不到(>_<)
+
+希望做成的样纸是 OldReader 那样，左边一栏标题，右边内容，实现滚动阅读
+
+---
+
 
 2014-02-25
 
@@ -23,32 +55,13 @@ GC好神奇
 
 ---
 
-2014-02-24
+2014-02-28
 
-图省事先用图片代替了
+貌似内存已经稳定了
 
-后面考虑用文字，这样复制粘贴也容易点
-
-好吧，是我HTML/CSS不会啊，写起来步步维艰，现在真心做不到(>_<)
-
-希望做成的样纸是 OldReader 那样，左边一栏标题，右边内容，实现滚动阅读
+请轻拍
 
 ---
 
-1. 感谢 @[faceair](https://github.com/faceair/zhihudaily)，他做了最早的web版（PHP）
-2. SQLite存储API返回的JSON数据，减小访问官网次数
-3. 每小时更新一次当天数据
-4. [Martini](https://github.com/codegangsta/martini) 框架
-5. 用的朋友的VPS [貌似十分不稳定，动不动就502了，（好吧，是我的小程序不稳定）]寄人篱下的痛苦 ｡･ﾟ･(*ﾉД`*)･ﾟ･｡ 
 
----
-
-以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
-
-( ⊙o⊙ )哇，这么多 '/'  
-弱爆了有木有
-
-( >﹏<。)～呜呜呜……
-
----
 
