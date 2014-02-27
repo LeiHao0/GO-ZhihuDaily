@@ -1,7 +1,7 @@
 GO-ZhihuDaily
 =============
 
-##知乎日报 Web版（GoLang实现）
+#[知乎日报 Web版（GoLang实现）](http://zhihudaily.ahorn.me/)
 
 ---
 
