@@ -50,6 +50,10 @@ func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 		var finaldata FinalData
 		var useddata []UsedData
 
+		if i == 1 {
+			useddata = append(useddata, zhihuDailyJson(todayData()))
+		}
+
 		for j := 0; j < days; j++ {
 			key := date.Format("20060102")
 
@@ -70,31 +74,6 @@ func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 	return pages
 }
 
-func updatePages(pages map[int]FinalData) {
-
-	updatepage := 1
-
-	oriUseddata := pages[updatepage].Useddata
-	oriPagemark := pages[updatepage].Pagemark
-
-	var finaldata FinalData
-	var useddata []UsedData
-
-	useddata = append(useddata, zhihuDailyJson(todayData()))
-	index := 0
-	if len(oriUseddata) > 4 {
-		index = 1
-	}
-	useddata = append(useddata, oriUseddata[index:]...)
-
-	finaldata.Useddata = useddata
-	finaldata.Pagemark = oriPagemark
-
-	delete(pages, updatepage)
-
-	pages[updatepage] = finaldata
-}
-
 func atoi(s string) int {
 	dateInt, _ := strconv.Atoi(s)
 	return dateInt
@@ -107,35 +86,18 @@ func autoUpdate() map[int]FinalData {
 	memoreyCache := QueryData()
 	pages := renderPages(days, memoreyCache)
 
-	updatePages(pages)
-	lastUpdate := time.Now()
-
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
 		for t := range ticker.C {
-
-			// Tomorrow 7 am
-			if tomorrowSeven(time.Now(), lastUpdate) {
-				lastUpdate = t
-				pages = nil
-				pages = renderPages(days, memoreyCache)
-				//fmt.Println("autoRenderPages at", t)
-			}
-
-			updatePages(pages)
-			//fmt.Println("autoUpdate at", t)
+			fmt.Println("renderPages at ", t)
+			pages = renderPages(days, memoreyCache)
 		}
 	}()
 
 	return pages
 }
 
-func tomorrowSeven(now time.Time, lastUpdate time.Time) bool {
-	return (time.Now().Format("02") > lastUpdate.Format("02")) && (time.Now().Format("15") > lastUpdate.Format("15"))
-}
-
 func main() {
-	//fmt.Println("main()")
 
 	pages := autoUpdate()
 
@@ -181,16 +143,6 @@ func getData(url string) string {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	return string(body)
-}
-
-func getAllData() {
-	date, _ := time.Parse("20060102", "20140209")
-	firstDate, _ := time.Parse("20060102", "20130520")
-
-	for ; date.After(firstDate); date = date.AddDate(0, 0, -1) {
-		getBeforeData(date.Format("20060102"))
-	}
-
 }
 
 func getBeforeData(date string) string {
