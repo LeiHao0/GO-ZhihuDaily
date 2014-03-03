@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"fmt"
 	"github.com/bitly/go-simplejson"
@@ -43,27 +44,32 @@ func zhihuDailyJson(str string) UsedData {
 
 	var mainpages []MainPage
 
-	os.Mkdir(PIC, 755)
+	fout, _ := os.OpenFile(SHAREIMAGE, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
 
 	for _, a := range news {
 		m := a.(map[string]interface{})
-		title := m["title"].(string)
-		url := m["url"].(string)
 
+		shareimage := m["share_image"].(string)
+
+		fout.WriteString(shareimage + "\n")
+
+		url := m["url"].(string)
 		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
+
+		title := m["title"].(string)
 
 		mainpages = append(mainpages, MainPage{id, title})
 	}
 
+	defer fout.Close()
+
 	return UsedData{Date: date, MainPages: mainpages}
 }
 
-func Exist(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
-}
-
 func renderPages(days int) map[int]FinalData {
+
+	os.Remove(SHAREIMAGE)
+
 	pages := make(map[int]FinalData)
 	var pagemark []int
 	date := time.Now()
@@ -124,11 +130,14 @@ func autoUpdate() map[int]FinalData {
 	return pages
 }
 
-var PIC = "static/pic/"
+var IMG = "static/img/"
+var SHAREIMAGE = "shareimage.txt"
 
 func main() {
 
 	pages := autoUpdate()
+
+	downloadAll()
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
@@ -149,39 +158,87 @@ func main() {
 	m.Run()
 }
 
-func download(path string, url string) {
-	fmt.Println(url)
+// -------------Download---------------
 
-	resp, err := http.Get(url)
-	checkErr(err)
+func Exist(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
+}
 
-	defer resp.Body.Close()
+func downloadAll() {
+	os.MkdirAll(IMG, 0755)
 
-	id := url[strings.LastIndexAny(url, "/")+1:]
+	var imgurl []string
 
-	file, err := os.Create(path + id)
-	checkErr(err)
+	file, err := os.Open(SHAREIMAGE)
+	defer file.Close()
+	if nil == err {
+		buff := bufio.NewReader(file)
 
-	io.Copy(file, resp.Body)
+		for {
+			url, err := buff.ReadString('\n')
+			url = strings.TrimSpace(url)
+			if err != nil || io.EOF == err {
+				break
+			}
+			//fmt.Println(strings.Replace(url, "http://d0.zhimg.com/", "", 1))
+
+			//download(url)
+			imgurl = append(imgurl, url)
+		}
+	}
+
+	muiltDownload(imgurl, 8)
+}
+
+func muiltDownload(urls []string, threads int) {
+	if threads == 1 {
+		go func() {
+			for _, url := range urls {
+				download(url)
+			}
+			//fmt.Println(len(urls))
+		}()
+	} else {
+		threads /= 2
+		mid := len(urls) / 2
+		//fmt.Println(threads, mid)
+		muiltDownload(urls[:mid], threads)
+		muiltDownload(urls[mid:], threads)
+	}
+
+}
+
+func download(url string) {
+
+	str := strings.Replace(url, "http://d0.zhimg.com/", "", 1)
+	index := strings.LastIndexAny(str, "/")
+
+	if index > -1 {
+		filename := strings.Replace(str, "/", "_", 1)
+		//fmt.Println(path, filename)
+
+		if !Exist(IMG + filename) {
+
+			resp, err := http.Get(url)
+			checkErr(err)
+
+			defer resp.Body.Close()
+
+			file, err := os.Create(IMG + filename)
+			checkErr(err)
+
+			io.Copy(file, resp.Body)
+
+			fmt.Println("download: " + url)
+		} else {
+			fmt.Println("skip: " + url)
+		}
+	}
+
 }
 
 // -------------------DB----------------------
-func getNews(id string) string {
-	eachnews := QueryEachNewsData(atoi(id))
-
-	if eachnews == "" {
-		url := "http://daily.zhihu.com/api/1.2/news/" + id
-		eachnews := getData(url)
-		writeToNewsIdDB(atoi(id), eachnews)
-		//fmt.Println(eachnews)
-	}
-
-	sj, err := simplejson.NewJson([]byte(eachnews))
-	checkErr(err)
-	body := sj.Get("body").MustString()
-
-	return body
-}
 
 func getData(url string) string {
 	resp, err := http.Get(url)
@@ -230,28 +287,6 @@ func QueryData() map[int]string {
 	return memoryCache
 }
 
-func QueryEachNewsData(id int) string {
-
-	db, err := sql.Open("sqlite3", "./main.db")
-	checkErr(err)
-
-	rows, err := db.Query("SELECT * FROM eachnews")
-	checkErr(err)
-
-	db.Close()
-
-	for rows.Next() {
-		var index int
-		var body string
-		err = rows.Scan(&index, &body)
-		if index == id {
-			return body
-		}
-	}
-
-	return ""
-}
-
 func writeToDB(date int, data string) {
 
 	db, err := sql.Open("sqlite3", "./main.db")
@@ -267,25 +302,6 @@ func writeToDB(date int, data string) {
 	checkErr(err)
 
 	fmt.Println(id)
-
-	db.Close()
-}
-
-func writeToNewsIdDB(id int, body string) {
-
-	db, err := sql.Open("sqlite3", "./main.db")
-	checkErr(err)
-	//插入数据
-	stmt, err := db.Prepare("INSERT INTO eachnews(id, body) values(?,?)")
-	checkErr(err)
-
-	res, err := stmt.Exec(id, body)
-	checkErr(err)
-
-	index, err := res.LastInsertId()
-	checkErr(err)
-
-	fmt.Println(index)
 
 	db.Close()
 }
