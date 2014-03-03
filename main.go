@@ -7,9 +7,12 @@ import (
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
 	_ "github.com/mattn/go-sqlite3"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -17,7 +20,7 @@ import (
 
 type UsedData struct {
 	Date string
-	News []interface{}
+	Id   []string
 }
 
 type FinalData struct {
@@ -33,7 +36,30 @@ func zhihuDailyJson(str string) UsedData {
 	tmp, _ := time.Parse("20060102", sj.Get("date").MustString())
 	date := tmp.Format("2006.01.02 Monday")
 
-	return UsedData{Date: date, News: news}
+	var id []string
+
+	os.Mkdir(PIC, 755)
+
+	for _, a := range news {
+		m := a.(map[string]interface{})
+		url := m["share_image"].(string)
+
+		idstr := url[strings.LastIndexAny(url, "/")+1:]
+		if !Exist(PIC + idstr) {
+			download(PIC, url)
+		} else {
+			fmt.Println("skip " + url)
+		}
+
+		id = append(id, idstr)
+	}
+
+	return UsedData{Date: date, Id: id}
+}
+
+func Exist(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil || os.IsExist(err)
 }
 
 func renderPages(days int) map[int]FinalData {
@@ -97,6 +123,8 @@ func autoUpdate() map[int]FinalData {
 	return pages
 }
 
+var PIC = "static/pic/"
+
 func main() {
 
 	pages := autoUpdate()
@@ -117,7 +145,6 @@ func main() {
 	})
 
 	m.Get("/url/**", func(params martini.Params, r render.Render) {
-
 		r.HTML(200, "share_image", params["_1"])
 	})
 
@@ -129,15 +156,26 @@ func main() {
 	m.Run()
 }
 
+func download(path string, url string) {
+	fmt.Println(url)
+
+	resp, err := http.Get(url)
+	checkErr(err)
+
+	defer resp.Body.Close()
+
+	id := url[strings.LastIndexAny(url, "/")+1:]
+
+	file, err := os.Create(path + id)
+	checkErr(err)
+
+	io.Copy(file, resp.Body)
+}
+
 // -------------------DB----------------------
 func getData(url string) string {
 	resp, err := http.Get(url)
-
-	if err != nil {
-		// handle error
-		fmt.Println(err)
-		return ""
-	}
+	checkErr(err)
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)

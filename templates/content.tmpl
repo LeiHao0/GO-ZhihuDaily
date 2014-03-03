@@ -16,10 +16,10 @@
 
 	<div>
 		<ul id ="box" class="box">
-			{{range .News}}
-			<a href="/url/{{.share_image}}" >
+			{{range .Id}}
+			<a href="/url/{{.}}" >
 				<li>
-					<img src='{{ .share_image }}'  alt='' class="image"/>
+					<img src='/pic/{{ . }}'  alt='' class="image"/>
 				</li>
 			</a>
 			{{end}}
