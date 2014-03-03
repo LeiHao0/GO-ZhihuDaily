@@ -16,10 +16,10 @@
 
 	<div>
 		<ul id ="box" class="box">
-			{{range .Id}}
-			<a href="/url/{{.}}" >
+			{{range .MainPages}}
+			<a href="http://daily.zhihu.com/story/{{.Id}}" >
 				<li>
-					<img src='/pic/{{ . }}'  alt='' class="image"/>
+					{{.Title}}
 				</li>
 			</a>
 			{{end}}

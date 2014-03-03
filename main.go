@@ -19,8 +19,13 @@ import (
 // 20060102 15:04:05
 
 type UsedData struct {
-	Date string
-	Id   []string
+	Date      string
+	MainPages []MainPage
+}
+
+type MainPage struct {
+	Id    int
+	Title string
 }
 
 type FinalData struct {
@@ -36,25 +41,21 @@ func zhihuDailyJson(str string) UsedData {
 	tmp, _ := time.Parse("20060102", sj.Get("date").MustString())
 	date := tmp.Format("2006.01.02 Monday")
 
-	var id []string
+	var mainpages []MainPage
 
 	os.Mkdir(PIC, 755)
 
 	for _, a := range news {
 		m := a.(map[string]interface{})
-		url := m["share_image"].(string)
+		title := m["title"].(string)
+		url := m["url"].(string)
 
-		idstr := url[strings.LastIndexAny(url, "/")+1:]
-		if !Exist(PIC + idstr) {
-			download(PIC, url)
-		} else {
-			fmt.Println("skip " + url)
-		}
+		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
-		id = append(id, idstr)
+		mainpages = append(mainpages, MainPage{id, title})
 	}
 
-	return UsedData{Date: date, Id: id}
+	return UsedData{Date: date, MainPages: mainpages}
 }
 
 func Exist(filename string) bool {
@@ -144,14 +145,6 @@ func main() {
 		r.HTML(200, "content", []interface{}{pages[id]})
 	})
 
-	m.Get("/url/**", func(params martini.Params, r render.Render) {
-		r.HTML(200, "share_image", params["_1"])
-	})
-
-	m.Get("/date/**", func(r render.Render) {
-		r.HTML(200, "content", []interface{}{pages[1]})
-	})
-
 	http.ListenAndServe("0.0.0.0:8000", m)
 	m.Run()
 }
@@ -173,6 +166,23 @@ func download(path string, url string) {
 }
 
 // -------------------DB----------------------
+func getNews(id string) string {
+	eachnews := QueryEachNewsData(atoi(id))
+
+	if eachnews == "" {
+		url := "http://daily.zhihu.com/api/1.2/news/" + id
+		eachnews := getData(url)
+		writeToNewsIdDB(atoi(id), eachnews)
+		//fmt.Println(eachnews)
+	}
+
+	sj, err := simplejson.NewJson([]byte(eachnews))
+	checkErr(err)
+	body := sj.Get("body").MustString()
+
+	return body
+}
+
 func getData(url string) string {
 	resp, err := http.Get(url)
 	checkErr(err)
@@ -198,18 +208,6 @@ func todayData() string {
 	return getData(url)
 }
 
-func InitDB() {
-	db, err := sql.Open("sqlite3", "./main.db")
-	checkErr(err)
-	//插入数据
-	stmt, err := db.Prepare("CREATE TABLE `datainfo` (`date` INTEGER PRIMARY KEY, `data` TEXT NULL)")
-	checkErr(err)
-
-	stmt.Exec()
-
-	db.Close()
-}
-
 func QueryData() map[int]string {
 
 	memoryCache := make(map[int]string)
@@ -232,6 +230,28 @@ func QueryData() map[int]string {
 	return memoryCache
 }
 
+func QueryEachNewsData(id int) string {
+
+	db, err := sql.Open("sqlite3", "./main.db")
+	checkErr(err)
+
+	rows, err := db.Query("SELECT * FROM eachnews")
+	checkErr(err)
+
+	db.Close()
+
+	for rows.Next() {
+		var index int
+		var body string
+		err = rows.Scan(&index, &body)
+		if index == id {
+			return body
+		}
+	}
+
+	return ""
+}
+
 func writeToDB(date int, data string) {
 
 	db, err := sql.Open("sqlite3", "./main.db")
@@ -247,6 +267,25 @@ func writeToDB(date int, data string) {
 	checkErr(err)
 
 	fmt.Println(id)
+
+	db.Close()
+}
+
+func writeToNewsIdDB(id int, body string) {
+
+	db, err := sql.Open("sqlite3", "./main.db")
+	checkErr(err)
+	//插入数据
+	stmt, err := db.Prepare("INSERT INTO eachnews(id, body) values(?,?)")
+	checkErr(err)
+
+	res, err := stmt.Exec(id, body)
+	checkErr(err)
+
+	index, err := res.LastInsertId()
+	checkErr(err)
+
+	fmt.Println(index)
 
 	db.Close()
 }
