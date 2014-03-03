@@ -36,10 +36,12 @@ func zhihuDailyJson(str string) UsedData {
 	return UsedData{Date: date, News: news}
 }
 
-func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
+func renderPages(days int) map[int]FinalData {
 	pages := make(map[int]FinalData)
 	var pagemark []int
 	date := time.Now()
+
+	memoreyCache := QueryData()
 
 	for i := 1; i <= len(memoreyCache)/days; i += 1 {
 		pagemark = append(pagemark, i)
@@ -60,7 +62,6 @@ func renderPages(days int, memoreyCache map[int]string) map[int]FinalData {
 			data, ok := memoreyCache[atoi(key)]
 			if !ok {
 				data = getBeforeData(key)
-				memoreyCache[atoi(key)] = data
 			}
 
 			useddata = append(useddata, zhihuDailyJson(data))
@@ -83,14 +84,13 @@ func autoUpdate() map[int]FinalData {
 
 	// init
 	days := 4
-	memoreyCache := QueryData()
-	pages := renderPages(days, memoreyCache)
+	pages := renderPages(days)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
 		for t := range ticker.C {
 			fmt.Println("renderPages at ", t)
-			pages = renderPages(days, memoreyCache)
+			pages = renderPages(days)
 		}
 	}()
 
