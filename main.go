@@ -25,8 +25,9 @@ type UsedData struct {
 }
 
 type MainPage struct {
-	Id    int
-	Title string
+	Id int
+	//Title      string
+	ShareImage string
 }
 
 type FinalData struct {
@@ -56,9 +57,12 @@ func zhihuDailyJson(str string) UsedData {
 		url := m["url"].(string)
 		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
-		title := m["title"].(string)
+		str := strings.Replace(shareimage, "http://d0.zhimg.com/", "", 1)
+		shareimage = strings.Replace(str, "/", "_", 1)
 
-		mainpages = append(mainpages, MainPage{id, title})
+		//title := m["title"].(string)
+
+		mainpages = append(mainpages, MainPage{id, shareimage})
 	}
 
 	defer fout.Close()
@@ -86,7 +90,9 @@ func renderPages(days int) map[int]FinalData {
 		var useddata []UsedData
 
 		if i == 1 {
-			useddata = append(useddata, zhihuDailyJson(todayData()))
+			todaydata := zhihuDailyJson(todayData())
+			useddata = append(useddata, todaydata)
+			downloadAll()
 		}
 
 		for j := 0; j < days; j++ {
@@ -137,10 +143,11 @@ func main() {
 
 	pages := autoUpdate()
 
-	downloadAll()
+	//downloadAll()
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
+	m.Use(martini.Static("static/img"))
 	m.Use(render.Renderer())
 
 	m.Get("/", func(r render.Render) {
@@ -181,13 +188,12 @@ func downloadAll() {
 			if err != nil || io.EOF == err {
 				break
 			}
-			//fmt.Println(strings.Replace(url, "http://d0.zhimg.com/", "", 1))
 
-			//download(url)
 			imgurl = append(imgurl, url)
 		}
 	}
 
+	// 8 threads download
 	muiltDownload(imgurl, 8)
 }
 
@@ -197,12 +203,10 @@ func muiltDownload(urls []string, threads int) {
 			for _, url := range urls {
 				download(url)
 			}
-			//fmt.Println(len(urls))
 		}()
 	} else {
 		threads /= 2
 		mid := len(urls) / 2
-		//fmt.Println(threads, mid)
 		muiltDownload(urls[:mid], threads)
 		muiltDownload(urls[mid:], threads)
 	}
@@ -216,7 +220,6 @@ func download(url string) {
 
 	if index > -1 {
 		filename := strings.Replace(str, "/", "_", 1)
-		//fmt.Println(path, filename)
 
 		if !Exist(IMG + filename) {
 
@@ -232,7 +235,7 @@ func download(url string) {
 
 			fmt.Println("download: " + url)
 		} else {
-			fmt.Println("skip: " + url)
+			fmt.Println("skip:  " + url)
 		}
 	}
 
