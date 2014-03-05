@@ -115,7 +115,7 @@ func renderPages(days int) map[int]FinalData {
 		var finaldata FinalData
 		var useddata []UsedData
 
-		if i == 1 {
+		if i == 1 && time.Now().Format("15") > "7" {
 			todaydata := zhihuDailyJson(todayData())
 			useddata = append(useddata, todaydata)
 
