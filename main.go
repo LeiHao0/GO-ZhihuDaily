@@ -8,6 +8,7 @@ import (
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/shxsun/go-sh"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -35,6 +36,9 @@ type FinalData struct {
 	Pagemark []int
 }
 
+var IMG = "static/img/"
+var SHAREIMAGE = "shareimage.txt"
+
 func zhihuDailyJson(str string) UsedData {
 
 	sj, _ := simplejson.NewJson([]byte(str))
@@ -59,8 +63,6 @@ func zhihuDailyJson(str string) UsedData {
 
 		str := strings.Replace(shareimage, "http://d0.zhimg.com/", "", 1)
 		shareimage = strings.Replace(str, "/", "_", 1)
-
-		//title := m["title"].(string)
 
 		mainpages = append(mainpages, MainPage{id, shareimage})
 	}
@@ -92,7 +94,13 @@ func renderPages(days int) map[int]FinalData {
 		if i == 1 {
 			todaydata := zhihuDailyJson(todayData())
 			useddata = append(useddata, todaydata)
-			downloadAll()
+
+			for _, mainpage := range todaydata.MainPages {
+				filename := mainpage.ShareImage
+				filename = strings.Replace(filename, "_", "/", 1)
+				download("http://d0.zhimg.com/" + filename)
+			}
+
 		}
 
 		for j := 0; j < days; j++ {
@@ -114,11 +122,6 @@ func renderPages(days int) map[int]FinalData {
 	return pages
 }
 
-func atoi(s string) int {
-	dateInt, _ := strconv.Atoi(s)
-	return dateInt
-}
-
 func autoUpdate() map[int]FinalData {
 
 	// init
@@ -136,18 +139,12 @@ func autoUpdate() map[int]FinalData {
 	return pages
 }
 
-var IMG = "static/img/"
-var SHAREIMAGE = "shareimage.txt"
-
 func main() {
 
 	pages := autoUpdate()
 
-	//downloadAll()
-
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
-	m.Use(martini.Static("static/img"))
 	m.Use(render.Renderer())
 
 	m.Get("/", func(r render.Render) {
@@ -165,7 +162,7 @@ func main() {
 	m.Run()
 }
 
-// -------------Download---------------
+// -------Download-------
 
 func Exist(filename string) bool {
 	_, err := os.Stat(filename)
@@ -221,7 +218,7 @@ func download(url string) {
 	if index > -1 {
 		filename := strings.Replace(str, "/", "_", 1)
 
-		if !Exist(IMG + filename) {
+		if !Exist(IMG + "croped/" + filename) {
 
 			resp, err := http.Get(url)
 			checkErr(err)
@@ -234,15 +231,20 @@ func download(url string) {
 			io.Copy(file, resp.Body)
 
 			fmt.Println("download: " + url)
-		} else {
-			fmt.Println("skip:  " + url)
+
+			cropImage(filename)
 		}
 	}
 
 }
 
-// -------------------DB----------------------
+func cropImage(filename string) {
+	session := sh.NewSession()
+	session.Command("convert", filename, "-crop", "x275+0+0", "+repage", "croped/"+filename, sh.Dir(IMG)).Run()
+	session.Command("rm", IMG+filename).Run()
+}
 
+// --------DataBase------
 func getData(url string) string {
 	resp, err := http.Get(url)
 	checkErr(err)
@@ -309,8 +311,14 @@ func writeToDB(date int, data string) {
 	db.Close()
 }
 
+// --------Tools---------
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func atoi(s string) int {
+	dateInt, _ := strconv.Atoi(s)
+	return dateInt
 }
