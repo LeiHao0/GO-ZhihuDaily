@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"database/sql"
 	"fmt"
 	"github.com/bitly/go-simplejson"
@@ -18,7 +17,7 @@ import (
 	"time"
 )
 
-// 20060102 15:04:05
+// FormatTime: 20060102 15:04:05
 
 type UsedData struct {
 	Date      string
@@ -26,8 +25,7 @@ type UsedData struct {
 }
 
 type MainPage struct {
-	Id int
-	//Title      string
+	Id         int
 	ShareImage string
 }
 
@@ -39,6 +37,33 @@ type FinalData struct {
 var IMG = "static/img/"
 var SHAREIMAGE = "shareimage.txt"
 
+//------------------------------------Main------------------------------------------
+
+func main() {
+
+	pages := autoUpdate()
+
+	m := martini.Classic()
+	m.Use(martini.Static("static"))
+	m.Use(render.Renderer())
+
+	m.Get("/", func(r render.Render) {
+
+		r.HTML(200, "content", []interface{}{pages[1]})
+	})
+
+	m.Get("/page/:id", func(params martini.Params, r render.Render) {
+
+		id := atoi(params["id"])
+		r.HTML(200, "content", []interface{}{pages[id]})
+	})
+
+	http.ListenAndServe("0.0.0.0:8000", m)
+	m.Run()
+}
+
+//------------------------------------Pages------------------------------------------
+
 func zhihuDailyJson(str string) UsedData {
 
 	sj, _ := simplejson.NewJson([]byte(str))
@@ -49,32 +74,23 @@ func zhihuDailyJson(str string) UsedData {
 
 	var mainpages []MainPage
 
-	fout, _ := os.OpenFile(SHAREIMAGE, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0755)
-
 	for _, a := range news {
 		m := a.(map[string]interface{})
-
-		shareimage := m["share_image"].(string)
-
-		fout.WriteString(shareimage + "\n")
 
 		url := m["url"].(string)
 		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
+		shareimage := m["share_image"].(string)
 		str := strings.Replace(shareimage, "http://d0.zhimg.com/", "", 1)
 		shareimage = strings.Replace(str, "/", "_", 1)
 
 		mainpages = append(mainpages, MainPage{id, shareimage})
 	}
 
-	defer fout.Close()
-
 	return UsedData{Date: date, MainPages: mainpages}
 }
 
 func renderPages(days int) map[int]FinalData {
-
-	os.Remove(SHAREIMAGE)
 
 	pages := make(map[int]FinalData)
 	var pagemark []int
@@ -139,75 +155,11 @@ func autoUpdate() map[int]FinalData {
 	return pages
 }
 
-func main() {
-
-	pages := autoUpdate()
-
-	m := martini.Classic()
-	m.Use(martini.Static("static"))
-	m.Use(render.Renderer())
-
-	m.Get("/", func(r render.Render) {
-
-		r.HTML(200, "content", []interface{}{pages[1]})
-	})
-
-	m.Get("/page/:id", func(params martini.Params, r render.Render) {
-
-		id := atoi(params["id"])
-		r.HTML(200, "content", []interface{}{pages[id]})
-	})
-
-	http.ListenAndServe("0.0.0.0:8000", m)
-	m.Run()
-}
-
-// -------Download-------
+// ----------------------------Download----------------------------------------------
 
 func Exist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
-}
-
-func downloadAll() {
-	os.MkdirAll(IMG, 0755)
-
-	var imgurl []string
-
-	file, err := os.Open(SHAREIMAGE)
-	defer file.Close()
-	if nil == err {
-		buff := bufio.NewReader(file)
-
-		for {
-			url, err := buff.ReadString('\n')
-			url = strings.TrimSpace(url)
-			if err != nil || io.EOF == err {
-				break
-			}
-
-			imgurl = append(imgurl, url)
-		}
-	}
-
-	// 8 threads download
-	muiltDownload(imgurl, 8)
-}
-
-func muiltDownload(urls []string, threads int) {
-	if threads == 1 {
-		go func() {
-			for _, url := range urls {
-				download(url)
-			}
-		}()
-	} else {
-		threads /= 2
-		mid := len(urls) / 2
-		muiltDownload(urls[:mid], threads)
-		muiltDownload(urls[mid:], threads)
-	}
-
 }
 
 func download(url string) {
@@ -244,7 +196,7 @@ func cropImage(filename string) {
 	session.Command("rm", IMG+filename).Run()
 }
 
-// --------DataBase------
+// --------------------------------DataBase------------------------------------------
 func getData(url string) string {
 	resp, err := http.Get(url)
 	checkErr(err)
@@ -311,7 +263,7 @@ func writeToDB(date int, data string) {
 	db.Close()
 }
 
-// --------Tools---------
+// -----------------------------------Tools------------------------------------------
 func checkErr(err error) {
 	if err != nil {
 		panic(err)
