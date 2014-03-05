@@ -58,6 +58,14 @@ func main() {
 		r.HTML(200, "content", []interface{}{pages[id]})
 	})
 
+	m.Get("/date/**", func(r render.Render) {
+		r.HTML(200, "content", []interface{}{pages[1]})
+	})
+
+	m.Get("/url/**", func(r render.Render) {
+		r.HTML(200, "content", []interface{}{pages[1]})
+	})
+
 	http.ListenAndServe("0.0.0.0:8000", m)
 	m.Run()
 }
