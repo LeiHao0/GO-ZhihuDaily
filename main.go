@@ -104,6 +104,10 @@ func renderPages(days int) map[int]FinalData {
 	var pagemark []int
 	date := time.Now()
 
+	if date.Format("MST") == "UTC" {
+		date = date.Add(time.Hour * 8)
+	}
+
 	memoreyCache := QueryData()
 
 	for i := 1; i <= len(memoreyCache)/days; i += 1 {
