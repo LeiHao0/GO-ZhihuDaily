@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Useage:
+# ./run.sh
+
+cd ${PWD}
+
 echo 'updating git'
 rm main.db
 git pull
