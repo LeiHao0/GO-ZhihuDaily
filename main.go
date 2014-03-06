@@ -115,14 +115,14 @@ func renderPages(days int) map[int]FinalData {
 		var finaldata FinalData
 		var useddata []UsedData
 
-		if i == 1 && time.Now().Format("15") > "7" {
+		if i == 1 && date.Format("15") > "07" {
 			todaydata := zhihuDailyJson(todayData())
 			useddata = append(useddata, todaydata)
 
 			for _, mainpage := range todaydata.MainPages {
 				filename := mainpage.ShareImage
 				filename = strings.Replace(filename, "_", "/", 1)
-				download("http://d0.zhimg.com/" + filename)
+				go download("http://d0.zhimg.com/" + filename)
 			}
 
 		}
