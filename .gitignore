@@ -1,2 +1,5 @@
 shareimage.txt
 static/img/*
+
+test.go
+templates/test.tmpl

@@ -25,8 +25,8 @@ type UsedData struct {
 }
 
 type MainPage struct {
-	Id         int
-	ShareImage string
+	Id         int    // story id
+	ShareImage string // download img
 }
 
 type FinalData struct {
@@ -41,7 +41,8 @@ var SHAREIMAGE = "shareimage.txt"
 
 func main() {
 
-	pages := autoUpdate()
+	pages := make(map[int]FinalData)
+	autoUpdate(pages)
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
@@ -56,6 +57,12 @@ func main() {
 
 		id := atoi(params["id"])
 		r.HTML(200, "content", []interface{}{pages[id]})
+	})
+
+	m.Get("/id/:id", func(params martini.Params, r render.Render) {
+
+		id := atoi(params["id"])
+		r.HTML(200, "id", id)
 	})
 
 	m.Get("/date/**", func(r render.Render) {
@@ -88,9 +95,8 @@ func zhihuDailyJson(str string) UsedData {
 		url := m["url"].(string)
 		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
-		shareimage := m["share_image"].(string)
-		str := strings.Replace(shareimage, "http://d0.zhimg.com/", "", 1)
-		shareimage = strings.Replace(str, "/", "_", 1)
+		shareimageurl := m["share_image"].(string)
+		shareimage := shareImgUrlToFilename(shareimageurl)
 
 		mainpages = append(mainpages, MainPage{id, shareimage})
 	}
@@ -98,9 +104,8 @@ func zhihuDailyJson(str string) UsedData {
 	return UsedData{Date: date, MainPages: mainpages}
 }
 
-func renderPages(days int) map[int]FinalData {
+func renderPages(days int, pages map[int]FinalData) {
 
-	pages := make(map[int]FinalData)
 	var pagemark []int
 	date := time.Now()
 
@@ -123,12 +128,7 @@ func renderPages(days int) map[int]FinalData {
 			todaydata := zhihuDailyJson(todayData())
 			useddata = append(useddata, todaydata)
 
-			for _, mainpage := range todaydata.MainPages {
-				filename := mainpage.ShareImage
-				filename = strings.Replace(filename, "_", "/", 1)
-				go download("http://d0.zhimg.com/" + filename)
-			}
-
+			downloadDayShareImg(todaydata.MainPages)
 		}
 
 		for j := 0; j < days; j++ {
@@ -139,7 +139,11 @@ func renderPages(days int) map[int]FinalData {
 				data = getBeforeData(key)
 			}
 
-			useddata = append(useddata, zhihuDailyJson(data))
+			beforeday := zhihuDailyJson(data)
+
+			//downloadDayShareImg(beforeday.MainPages)
+
+			useddata = append(useddata, beforeday)
 			date = date.AddDate(0, 0, -1)
 		}
 		finaldata.Useddata = useddata
@@ -147,24 +151,22 @@ func renderPages(days int) map[int]FinalData {
 		pages[i] = finaldata
 	}
 
-	return pages
 }
 
-func autoUpdate() map[int]FinalData {
+func autoUpdate(pages map[int]FinalData) {
 
 	// init
 	days := 4
-	pages := renderPages(days)
+	renderPages(days, pages)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
 		for t := range ticker.C {
 			fmt.Println("renderPages at ", t)
-			pages = renderPages(days)
+			renderPages(days, pages)
 		}
 	}()
 
-	return pages
 }
 
 // ----------------------------Download----------------------------------------------
@@ -176,11 +178,10 @@ func Exist(filename string) bool {
 
 func download(url string) {
 
-	str := strings.Replace(url, "http://d0.zhimg.com/", "", 1)
-	index := strings.LastIndexAny(str, "/")
+	filename := shareImgUrlToFilename(url)
+	index := strings.LastIndexAny(filename, "_")
 
 	if index > -1 {
-		filename := strings.Replace(str, "/", "_", 1)
 
 		if !Exist(IMG + "croped/" + filename) {
 
@@ -215,6 +216,7 @@ func getData(url string) string {
 
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	checkErr(err)
 
 	return string(body)
 }
@@ -256,6 +258,28 @@ func QueryData() map[int]string {
 	return memoryCache
 }
 
+func QueryID(id int, data string) string {
+
+	db, err := sql.Open("sqlite3", "./main.db")
+	checkErr(err)
+
+	rows, err := db.Query("SELECT * FROM id")
+	checkErr(err)
+
+	db.Close()
+
+	for rows.Next() {
+		var index int
+		var data string
+		err = rows.Scan(&index, &data)
+		if id == index {
+			return data
+		}
+	}
+
+	return ""
+}
+
 func writeToDB(date int, data string) {
 
 	db, err := sql.Open("sqlite3", "./main.db")
@@ -285,4 +309,25 @@ func checkErr(err error) {
 func atoi(s string) int {
 	dateInt, _ := strconv.Atoi(s)
 	return dateInt
+}
+
+func idToUrl(id int) string {
+	return "http://daily.zhihu.com/api/1.2/news/" + strconv.Itoa(id)
+}
+
+func filenameToShareImgUrl(filename string) string {
+	return "http://d0.zhimg.com/" + strings.Replace(filename, "_", "/", 1)
+}
+
+func shareImgUrlToFilename(shareImgUrl string) string {
+	str := strings.Replace(shareImgUrl, "http://d0.zhimg.com/", "", 1)
+	return strings.Replace(str, "/", "_", 1)
+}
+
+func downloadDayShareImg(mainpages []MainPage) {
+	for _, mainpage := range mainpages {
+		filename := mainpage.ShareImage
+		//fmt.Println(filename)
+		download(filenameToShareImgUrl(filename))
+	}
 }
