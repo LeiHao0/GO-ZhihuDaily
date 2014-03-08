@@ -3,6 +3,11 @@ GO-ZhihuDaily
 
 #[知乎日报 Web版（GoLang实现）](http://zhihudaily.ahorn.me/)
 
+写这个的最初目的是因为PC上没有一个很好的阅读知乎日报的方式    
+即那种一眼望过去，几天内的内容尽收眼底，然后点开自己感兴趣的Title继续阅读  
+
+
+---
 以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
 
 ( ⊙o⊙ )哇，这么多 '/'  
