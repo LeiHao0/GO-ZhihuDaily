@@ -6,6 +6,12 @@ GO-ZhihuDaily
 写这个的最初目的是因为PC上没有一个很好的阅读知乎日报的方式    
 即那种一眼望过去，几天内的内容尽收眼底，然后点开自己感兴趣的Title继续阅读  
 
+`cd GO-ZhihuDaily`  
+`go run  main.go`  
+
+浏览器url:   
+`0.0.0.0:8000`   
+
 
 ---
 以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
