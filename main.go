@@ -141,7 +141,9 @@ func renderPages(days int, pages map[int]FinalData) {
 
 			beforeday := zhihuDailyJson(data)
 
-			//downloadDayShareImg(beforeday.MainPages)
+			if j == 0 { // comment this if you are first `go run main.go`
+				downloadDayShareImg(beforeday.MainPages)
+			} // comment this if you are first `go run main.go`
 
 			useddata = append(useddata, beforeday)
 			date = date.AddDate(0, 0, -1)
@@ -156,7 +158,7 @@ func renderPages(days int, pages map[int]FinalData) {
 func autoUpdate(pages map[int]FinalData) {
 
 	// init
-	days := 4
+	days := 3
 	renderPages(days, pages)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
