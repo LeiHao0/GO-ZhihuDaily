@@ -35,7 +35,6 @@ type FinalData struct {
 }
 
 var IMG = "static/img/"
-var SHAREIMAGE = "shareimage.txt"
 
 //------------------------------------Main------------------------------------------
 
@@ -141,9 +140,9 @@ func renderPages(days int, pages map[int]FinalData) {
 
 			beforeday := zhihuDailyJson(data)
 
-			if j == 0 { // comment this if you are first `go run main.go`
+			if i == 1 && j == 0 { // comment this line if you are first `go run main.go`
 				downloadDayShareImg(beforeday.MainPages)
-			} // comment this if you are first `go run main.go`
+			} // comment this line if you are first `go run main.go`
 
 			useddata = append(useddata, beforeday)
 			date = date.AddDate(0, 0, -1)
