@@ -90,14 +90,21 @@ func zhihuDailyJson(str string) UsedData {
 
 	for _, a := range news {
 		m := a.(map[string]interface{})
-
 		url := m["url"].(string)
 		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
-		shareimageurl := m["share_image"].(string)
-		shareimage := shareImgUrlToFilename(shareimageurl)
+		shareimageurl := ""
+		shareimage := ""
+		if m["share_image"] != nil {
+			shareimageurl = m["share_image"].(string)
+			shareimage = shareImgUrlToFilename(shareimageurl)
+			mainpages = append(mainpages, MainPage{id, shareimage})
+		} /*else { // no share_image
+			fmt.Println(m["image"])
+			shareimageurl = m["image"].(string)
+			shareimage = strconv.Itoa(id)
+		}*/
 
-		mainpages = append(mainpages, MainPage{id, shareimage})
 	}
 
 	return UsedData{Date: date, MainPages: mainpages}
