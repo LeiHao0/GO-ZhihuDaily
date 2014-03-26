@@ -12,6 +12,11 @@ GO-ZhihuDaily
 浏览器url:   
 `0.0.0.0:8000`   
 
+---
+
+**License**
+
+GNU GENERAL PUBLIC LICENSE
 
 ---
 以前没做过Web开发，边写边学GoLang/Git/HTML/CSS/GAE
