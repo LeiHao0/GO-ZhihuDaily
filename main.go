@@ -174,7 +174,7 @@ func autoUpdate(pages map[int]FinalData) {
 
 	// init
 	days := 3
-	renderPages(days, pages)
+	go renderPages(days, pages)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
@@ -221,7 +221,7 @@ func download(url string) {
 
 func cropImage(filename string) {
 	session := sh.NewSession()
-	session.Command("convert", "-resize", "440>", "-crop", "x275+0+0", filename, "croped/"+filename, sh.Dir(IMG)).Run()
+	session.Command("convert", filename, "-resize", "440>", "-crop", "x275+0+0", "croped/"+filename, sh.Dir(IMG)).Run()
 	session.Command("rm", IMG+filename).Run()
 }
 
