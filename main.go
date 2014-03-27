@@ -20,6 +20,16 @@ import (
 
 // FormatTime: 20060102 15:04:05
 
+/*
+	My dear friend,
+
+	When I wrote this, God and I knew what it meant.
+
+	Now, God only knows.
+
+	CC @Artwalk
+*/
+
 type UsedData struct {
 	Date      string
 	MainPages []MainPage
