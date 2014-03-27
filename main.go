@@ -144,6 +144,8 @@ func renderPages(days int, pages map[int]FinalData) {
 		pagemark = append(pagemark, i)
 	}
 
+	var newMainPages []MainPage
+
 	for i := 1; i <= len(memoreyCache)/days; i += 1 {
 
 		var finaldata FinalData
@@ -153,7 +155,8 @@ func renderPages(days int, pages map[int]FinalData) {
 			todaydata := zhihuDailyJson(todayData())
 			useddata = append(useddata, todaydata)
 
-			downloadDayShareImg(todaydata.MainPages)
+			//downloadDayShareImg(todaydata.MainPages)
+			newMainPages = append(newMainPages, todaydata.MainPages...)
 		}
 
 		for j := 0; j < days; j++ {
@@ -167,7 +170,8 @@ func renderPages(days int, pages map[int]FinalData) {
 			beforeday := zhihuDailyJson(data)
 
 			if i == 1 && j == 0 { // comment this line if you are first `go run main.go`
-				downloadDayShareImg(beforeday.MainPages)
+				//downloadDayShareImg(beforeday.MainPages)
+				newMainPages = append(newMainPages, beforeday.MainPages...)
 			} // comment this line if you are first `go run main.go`
 
 			useddata = append(useddata, beforeday)
@@ -178,13 +182,14 @@ func renderPages(days int, pages map[int]FinalData) {
 		pages[i] = finaldata
 	}
 
+	downloadDayShareImg(newMainPages)
 }
 
 func autoUpdate(pages map[int]FinalData) {
 
 	// init
 	days := 3
-	go renderPages(days, pages)
+	renderPages(days, pages)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
@@ -226,6 +231,21 @@ func download(url string) {
 
 			cropImage(filename)
 		}
+	}
+}
+
+func muiltDownload(urls []string, threads int) {
+	if threads == 1 {
+		go func() {
+			for _, url := range urls {
+				download(url)
+			}
+		}()
+	} else {
+		threads /= 2
+		mid := len(urls) / 2
+		muiltDownload(urls[:mid], threads)
+		muiltDownload(urls[mid:], threads)
 	}
 }
 
@@ -368,8 +388,15 @@ func shareImgUrlToFilename(shareImgUrl string) string {
 	return filename
 }
 
+// notice: do not call at once
 func downloadDayShareImg(mainpages []MainPage) {
+
+	var urls []string
+
 	for _, mainpage := range mainpages {
-		download(filenameToShareImgUrl(mainpage.ShareImage))
+		urls = append(urls, filenameToShareImgUrl(mainpage.ShareImage))
 	}
+
+	// 8 thread
+	muiltDownload(urls, 8)
 }

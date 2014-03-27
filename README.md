@@ -14,7 +14,7 @@ GO-ZhihuDaily
 
 ---
 
-API:
+API（点击看大图）:
 
 ![](https://github.com/Artwalk/GO-ZhihuDaily/blob/master/API.png)
 
