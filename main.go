@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	//"encoding/json"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/codegangsta/martini"
@@ -25,7 +26,8 @@ type UsedData struct {
 }
 
 type MainPage struct {
-	Id         int    // story id
+	Id         int // story id
+	Title      string
 	ShareImage string // download img
 }
 
@@ -89,21 +91,28 @@ func zhihuDailyJson(str string) UsedData {
 	var mainpages []MainPage
 
 	for _, a := range news {
+
 		m := a.(map[string]interface{})
-		url := m["url"].(string)
-		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
 		shareimageurl := ""
 		shareimage := ""
+		title := ""
+
+		url := m["url"].(string)
+		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
+
 		if m["share_image"] != nil {
+
 			shareimageurl = m["share_image"].(string)
-			shareimage = shareImgUrlToFilename(shareimageurl)
-			mainpages = append(mainpages, MainPage{id, shareimage})
-		} /*else { // no share_image
-			fmt.Println(m["image"])
+
+		} else { // no share_imag
+			title = m["title"].(string)
 			shareimageurl = m["image"].(string)
-			shareimage = strconv.Itoa(id)
-		}*/
+			//fmt.Println(id, title, shareimage)
+		}
+
+		shareimage = shareImgUrlToFilename(shareimageurl)
+		mainpages = append(mainpages, MainPage{id, title, shareimage})
 
 	}
 
@@ -203,17 +212,16 @@ func download(url string) {
 
 			io.Copy(file, resp.Body)
 
-			fmt.Println("download: " + url)
+			fmt.Println("download: "+url+" -> ", filename)
 
 			cropImage(filename)
 		}
 	}
-
 }
 
 func cropImage(filename string) {
 	session := sh.NewSession()
-	session.Command("convert", filename, "-crop", "x275+0+0", "+repage", "croped/"+filename, sh.Dir(IMG)).Run()
+	session.Command("convert", "-resize", "440>", "-crop", "x275+0+0", filename, "croped/"+filename, sh.Dir(IMG)).Run()
 	session.Command("rm", IMG+filename).Run()
 }
 
@@ -324,18 +332,34 @@ func idToUrl(id int) string {
 }
 
 func filenameToShareImgUrl(filename string) string {
-	return "http://d0.zhimg.com/" + strings.Replace(filename, "_", "/", 1)
+	url := ""
+	if !strings.Contains(filename, "-") {
+		url = "http://d0.zhimg.com/" + strings.Replace(filename, "_", "/", 1)
+	} else {
+		url = strings.Replace(filename, "_", "/", -1)
+		url = strings.Replace(url, "-", ":", -1)
+	}
+
+	return url
 }
 
 func shareImgUrlToFilename(shareImgUrl string) string {
-	str := strings.Replace(shareImgUrl, "http://d0.zhimg.com/", "", 1)
-	return strings.Replace(str, "/", "_", 1)
+
+	filename := ""
+
+	if strings.Contains(shareImgUrl, "http://d0.zhimg.com/") {
+		str := strings.Replace(shareImgUrl, "http://d0.zhimg.com/", "", 1)
+		filename = strings.Replace(str, "/", "_", 1)
+	} else {
+		filename = strings.Replace(shareImgUrl, "/", "_", -1)
+		filename = strings.Replace(filename, ":", "-", -1)
+	}
+
+	return filename
 }
 
 func downloadDayShareImg(mainpages []MainPage) {
 	for _, mainpage := range mainpages {
-		filename := mainpage.ShareImage
-		//fmt.Println(filename)
-		download(filenameToShareImgUrl(filename))
+		download(filenameToShareImgUrl(mainpage.ShareImage))
 	}
 }

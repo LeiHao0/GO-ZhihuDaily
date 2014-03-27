@@ -1,5 +1,5 @@
 shareimage.txt
 static/img/*
-
+main.db
 test.go
 templates/test.tmpl
