@@ -11,6 +11,7 @@ import (
 	"github.com/shxsun/go-sh"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -208,6 +209,10 @@ func Exist(filename string) bool {
 	return err == nil || os.IsExist(err)
 }
 
+func dialTimeout(network, addr string) (net.Conn, error) {
+	return net.DialTimeout(network, addr, time.Duration(5*time.Second))
+}
+
 func download(url string) {
 
 	filename := shareImgUrlToFilename(url)
@@ -217,7 +222,14 @@ func download(url string) {
 
 		if !Exist(IMG + "croped/" + filename) {
 
-			resp, err := http.Get(url)
+			transport := http.Transport{
+				Dial: dialTimeout,
+			}
+			client := http.Client{
+				Transport: &transport,
+			}
+
+			resp, err := client.Get(url)
 			checkErr(err)
 
 			defer resp.Body.Close()
@@ -397,6 +409,6 @@ func downloadDayShareImg(mainpages []MainPage) {
 		urls = append(urls, filenameToShareImgUrl(mainpage.ShareImage))
 	}
 
-	// 8 thread
-	muiltDownload(urls, 8)
+	// 4 thread
+	muiltDownload(urls, 4)
 }
