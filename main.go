@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	//"encoding/json"
 	"fmt"
 	"github.com/bitly/go-simplejson"
 	"github.com/codegangsta/martini"
@@ -192,7 +191,7 @@ func autoUpdate(pages map[int]FinalData) {
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
 		for t := range ticker.C {
-			fmt.Println("renderPages at ", t)
+			//fmt.Println("renderPages at ", t)
 			renderPages(days, pages)
 		}
 	}()
@@ -215,22 +214,19 @@ func download(url string) {
 
 		if !Exist(IMG + "croped/" + filename) {
 
-			if resp, err := http.Get(url); err != nil {
-				fmt.Println("err")
-				checkErr(err)
-			} else {
-				defer resp.Body.Close()
+			resp, err := http.Get(url)
+			checkErr(err)
 
-				file, err := os.Create(IMG + filename)
-				checkErr(err)
+			defer resp.Body.Close()
 
-				io.Copy(file, resp.Body)
+			file, err := os.Create(IMG + filename)
+			checkErr(err)
 
-				//fmt.Println("download: "+url+" -> ", filename)
+			io.Copy(file, resp.Body)
 
-				cropImage(filename)
-			}
+			//fmt.Println("download: "+url+" -> ", filename)
 
+			cropImage(filename)
 		}
 	}
 }
