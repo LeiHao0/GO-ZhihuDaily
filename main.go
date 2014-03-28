@@ -11,11 +11,11 @@ import (
 	"github.com/shxsun/go-sh"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -116,10 +116,9 @@ func zhihuDailyJson(str string) UsedData {
 
 			shareimageurl = m["share_image"].(string)
 
-		} else { // no share_imag
+		} else { // new api do not provide share_imag
 			title = m["title"].(string)
 			shareimageurl = m["image"].(string)
-			//fmt.Println(id, title, shareimage)
 		}
 
 		shareimage = shareImgUrlToFilename(shareimageurl)
@@ -156,7 +155,6 @@ func renderPages(days int, pages map[int]FinalData) {
 			todaydata := zhihuDailyJson(todayData())
 			useddata = append(useddata, todaydata)
 
-			//downloadDayShareImg(todaydata.MainPages)
 			newMainPages = append(newMainPages, todaydata.MainPages...)
 		}
 
@@ -171,7 +169,6 @@ func renderPages(days int, pages map[int]FinalData) {
 			beforeday := zhihuDailyJson(data)
 
 			if i == 1 && j == 0 { // comment this line if you are first `go run main.go`
-				//downloadDayShareImg(beforeday.MainPages)
 				newMainPages = append(newMainPages, beforeday.MainPages...)
 			} // comment this line if you are first `go run main.go`
 
@@ -209,10 +206,6 @@ func Exist(filename string) bool {
 	return err == nil || os.IsExist(err)
 }
 
-func dialTimeout(network, addr string) (net.Conn, error) {
-	return net.DialTimeout(network, addr, time.Duration(5*time.Second))
-}
-
 func download(url string) {
 
 	filename := shareImgUrlToFilename(url)
@@ -222,43 +215,46 @@ func download(url string) {
 
 		if !Exist(IMG + "croped/" + filename) {
 
-			transport := http.Transport{
-				Dial: dialTimeout,
+			if resp, err := http.Get(url); err != nil {
+				fmt.Println("err")
+				checkErr(err)
+			} else {
+				defer resp.Body.Close()
+
+				file, err := os.Create(IMG + filename)
+				checkErr(err)
+
+				io.Copy(file, resp.Body)
+
+				//fmt.Println("download: "+url+" -> ", filename)
+
+				cropImage(filename)
 			}
-			client := http.Client{
-				Transport: &transport,
-			}
 
-			resp, err := client.Get(url)
-			checkErr(err)
-
-			defer resp.Body.Close()
-
-			file, err := os.Create(IMG + filename)
-			checkErr(err)
-
-			io.Copy(file, resp.Body)
-
-			fmt.Println("download: "+url+" -> ", filename)
-
-			cropImage(filename)
 		}
 	}
 }
 
-func muiltDownload(urls []string, threads int) {
-	if threads == 1 {
+func downloadDayShareImg(mainpages []MainPage) {
+
+	// 8 thread
+	nbConcurrentGet := 8
+	urls := make(chan string, nbConcurrentGet)
+	var wg sync.WaitGroup
+	for i := 0; i < nbConcurrentGet; i++ {
 		go func() {
-			for _, url := range urls {
+			for url := range urls {
 				download(url)
+				wg.Done()
 			}
 		}()
-	} else {
-		threads /= 2
-		mid := len(urls) / 2
-		muiltDownload(urls[:mid], threads)
-		muiltDownload(urls[mid:], threads)
 	}
+	for _, mainpage := range mainpages {
+		wg.Add(1)
+		urls <- fmt.Sprintf(filenameToShareImgUrl(mainpage.ShareImage))
+	}
+
+	wg.Wait()
 }
 
 func cropImage(filename string) {
@@ -398,17 +394,4 @@ func shareImgUrlToFilename(shareImgUrl string) string {
 	}
 
 	return filename
-}
-
-// notice: do not call at once
-func downloadDayShareImg(mainpages []MainPage) {
-
-	var urls []string
-
-	for _, mainpage := range mainpages {
-		urls = append(urls, filenameToShareImgUrl(mainpage.ShareImage))
-	}
-
-	// 4 thread
-	muiltDownload(urls, 4)
 }
