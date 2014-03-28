@@ -94,27 +94,22 @@ func zhihuDailyJson(str string) UsedData {
 
 	sj, _ := simplejson.NewJson([]byte(str))
 
-	news, _ := sj.Get("news").Array()
 	tmp, _ := time.Parse("20060102", sj.Get("date").MustString())
 	date := tmp.Format("2006.01.02 Monday")
 
+	news, _ := sj.Get("news").Array()
+
 	var mainpages []MainPage
+	var shareimageurl, shareimage, title string
 
 	for _, a := range news {
-
 		m := a.(map[string]interface{})
-
-		shareimageurl := ""
-		shareimage := ""
-		title := ""
 
 		url := m["url"].(string)
 		id := atoi(url[strings.LastIndexAny(url, "/")+1:])
 
 		if m["share_image"] != nil {
-
 			shareimageurl = m["share_image"].(string)
-
 		} else { // new api do not provide share_imag
 			title = m["title"].(string)
 			shareimageurl = m["image"].(string)
@@ -122,7 +117,6 @@ func zhihuDailyJson(str string) UsedData {
 
 		shareimage = shareImgUrlToFilename(shareimageurl)
 		mainpages = append(mainpages, MainPage{id, title, shareimage})
-
 	}
 
 	return UsedData{Date: date, MainPages: mainpages}
@@ -151,29 +145,36 @@ func renderPages(days int, pages map[int]FinalData) {
 		var useddata []UsedData
 
 		if i == 1 && date.Format("15") > "07" {
-			todaydata := zhihuDailyJson(todayData())
-			useddata = append(useddata, todaydata)
+			if str := todayData(); str != "" {
+				todaydata := zhihuDailyJson(str)
+				useddata = append(useddata, todaydata)
 
-			newMainPages = append(newMainPages, todaydata.MainPages...)
+				newMainPages = append(newMainPages, todaydata.MainPages...)
+			}
 		}
 
 		for j := 0; j < days; j++ {
 			key := date.Format("20060102")
 
-			data, ok := memoreyCache[atoi(key)]
-			if !ok {
-				data = getBeforeData(key)
+			data, ok := memoreyCache[atoi(key)] // get from db
+			if !ok {                            // get from zhihu
+				// if no replay; skip this day
+				if data = getBeforeData(key); data == "" {
+					break
+				}
 			}
 
 			beforeday := zhihuDailyJson(data)
 
-			if i == 1 && j == 0 { // comment this line if you are first `go run main.go`
+			// comment this `if` if you are first `go run main.go`
+			if i == 1 && j == 0 {
 				newMainPages = append(newMainPages, beforeday.MainPages...)
-			} // comment this line if you are first `go run main.go`
-
+			} // end
 			useddata = append(useddata, beforeday)
+
 			date = date.AddDate(0, 0, -1)
 		}
+
 		finaldata.Useddata = useddata
 		finaldata.Pagemark = pagemark
 		pages[i] = finaldata
@@ -191,7 +192,7 @@ func autoUpdate(pages map[int]FinalData) {
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
 		for t := range ticker.C {
-			//fmt.Println("renderPages at ", t)
+			fmt.Println("renderPages at ", t)
 			renderPages(days, pages)
 		}
 	}()
@@ -206,27 +207,18 @@ func Exist(filename string) bool {
 }
 
 func download(url string) {
-
 	filename := shareImgUrlToFilename(url)
 	index := strings.LastIndexAny(filename, "_")
 
-	if index > -1 {
+	if index > -1 && !Exist(IMG+"croped/"+filename) {
 
-		if !Exist(IMG + "croped/" + filename) {
-
-			resp, err := http.Get(url)
-			checkErr(err)
-
+		if resp, err := http.Get(url); err == nil {
 			defer resp.Body.Close()
 
-			file, err := os.Create(IMG + filename)
-			checkErr(err)
-
-			io.Copy(file, resp.Body)
-
-			//fmt.Println("download: "+url+" -> ", filename)
-
-			cropImage(filename)
+			if file, err := os.Create(IMG + filename); err == nil {
+				io.Copy(file, resp.Body)
+				cropImage(filename)
+			}
 		}
 	}
 }
@@ -259,17 +251,19 @@ func cropImage(filename string) {
 	session.Command("rm", IMG+filename).Run()
 }
 
-// --------------------------------DataBase------------------------------------------
 func getData(url string) string {
-	resp, err := http.Get(url)
-	checkErr(err)
 
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	if resp, err := http.Get(url); err == nil {
+		defer resp.Body.Close()
+		if body, err := ioutil.ReadAll(resp.Body); err == nil {
+			return string(body)
+		}
+	}
 
-	return string(body)
+	return ""
 }
+
+// --------------------------------DataBase------------------------------------------
 
 func getBeforeData(date string) string {
 	url := "http://news.at.zhihu.com/api/1.2/news/before/" + date
