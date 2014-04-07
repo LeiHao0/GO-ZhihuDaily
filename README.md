@@ -3,6 +3,8 @@ GO-ZhihuDaily
 
 #[知乎日报 Web版（GoLang实现）](http://zhihudaily.ahorn.me/)
 
+点上面的链接可以跳转  
+
 写这个的最初目的是因为PC上没有一个很好的阅读知乎日报的方式    
 即那种一眼望过去，几天内的内容尽收眼底，然后点开自己感兴趣的Title继续阅读  
 
@@ -16,7 +18,7 @@ GO-ZhihuDaily
 
 API（点击看大图）:
 
-![](https://github.com/Artwalk/GO-ZhihuDaily/blob/master/API.png)
+![](http://cl.ly/image/013N0v0H2g3i/WEB%E7%9F%A5%E4%B9%8E%E6%97%A5%E6%8A%A5.png)
 
 
 ---
