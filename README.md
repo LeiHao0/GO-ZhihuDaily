@@ -18,8 +18,9 @@ GO-ZhihuDaily
 
 API（点击看大图）:
 
-![](http://cl.ly/image/013N0v0H2g3i/WEB%E7%9F%A5%E4%B9%8E%E6%97%A5%E6%8A%A5.png)
+![](http://cl.ly/image/013N0v0H2g3i/WEB%E7%9F%A5%E4%B9%8E%E6%97%A5%E6%8A%A5.png)  
 
+红色的已作废，蓝色的可以用  
 
 ---
 
