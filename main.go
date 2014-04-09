@@ -14,7 +14,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
+	//"sync"
 	"time"
 )
 
@@ -228,21 +228,21 @@ func downloadDayShareImg(mainpages []MainPage) {
 	// 8 thread
 	nbConcurrentGet := 8
 	urls := make(chan string, nbConcurrentGet)
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 	for i := 0; i < nbConcurrentGet; i++ {
 		go func() {
 			for url := range urls {
 				download(url)
-				wg.Done()
+				//wg.Done()
 			}
 		}()
 	}
 	for _, mainpage := range mainpages {
-		wg.Add(1)
+		//wg.Add(1)
 		urls <- fmt.Sprintf(filenameToShareImgUrl(mainpage.ShareImage))
 	}
 
-	wg.Wait()
+	//wg.Wait()
 }
 
 func cropImage(filename string) {
