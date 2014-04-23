@@ -1,3 +1,13 @@
+/*
+	My dear friend,
+
+	When I wrote this, God and I knew what it meant.
+
+	Now, God only knows.
+
+	CC @Artwalk
+*/
+
 package main
 
 import (
@@ -15,20 +25,11 @@ import (
 	"strconv"
 	"strings"
 	//"sync"
+	"encoding/json"
 	"time"
 )
 
-// FormatTime: 20060102 15:04:05
-
-/*
-	My dear friend,
-
-	When I wrote this, God and I knew what it meant.
-
-	Now, God only knows.
-
-	CC @Artwalk
-*/
+// Golang FormatTime: 20060102 15:04:05
 
 type UsedData struct {
 	Date      string
@@ -52,36 +53,28 @@ var IMG = "static/img/"
 
 func main() {
 
-	pages := make(map[int]FinalData)
-	autoUpdate(pages)
+	autoUpdate()
 
 	m := martini.Classic()
 	m.Use(martini.Static("static"))
 	m.Use(render.Renderer())
 
 	m.Get("/", func(r render.Render) {
-
-		r.HTML(200, "content", []interface{}{pages[1]})
+		r.HTML(200, "content", []interface{}{getPage(1)})
 	})
 
 	m.Get("/page/:id", func(params martini.Params, r render.Render) {
 
 		id := atoi(params["id"])
-		r.HTML(200, "content", []interface{}{pages[id]})
-	})
-
-	m.Get("/id/:id", func(params martini.Params, r render.Render) {
-
-		id := atoi(params["id"])
-		r.HTML(200, "id", id)
+		r.HTML(200, "content", []interface{}{getPage(id)})
 	})
 
 	m.Get("/date/**", func(r render.Render) {
-		r.HTML(200, "content", []interface{}{pages[1]})
+		r.HTML(200, "content", []interface{}{getPage(1)})
 	})
 
 	m.Get("/url/**", func(r render.Render) {
-		r.HTML(200, "content", []interface{}{pages[1]})
+		r.HTML(200, "content", []interface{}{getPage(1)})
 	})
 
 	http.ListenAndServe("0.0.0.0:8000", m)
@@ -122,7 +115,7 @@ func zhihuDailyJson(str string) UsedData {
 	return UsedData{Date: date, MainPages: mainpages}
 }
 
-func renderPages(days int, pages map[int]FinalData) {
+func renderPages(days int) {
 
 	var pagemark []int
 	date := time.Now()
@@ -131,18 +124,17 @@ func renderPages(days int, pages map[int]FinalData) {
 		date = date.Add(time.Hour * 8)
 	}
 
-	memoreyCache := QueryData()
+	memoreyCache := QueryDateData()
 
 	for i := 1; i <= len(memoreyCache)/days; i += 1 {
 		pagemark = append(pagemark, i)
 	}
 
 	var newMainPages []MainPage
+	var finaldata FinalData
+	var useddata []UsedData
 
 	for i := 1; i <= len(memoreyCache)/days; i += 1 {
-
-		var finaldata FinalData
-		var useddata []UsedData
 
 		if i == 1 && date.Format("15") > "07" {
 			if str := todayData(); str != "" {
@@ -158,7 +150,7 @@ func renderPages(days int, pages map[int]FinalData) {
 
 			data, ok := memoreyCache[atoi(key)] // get from db
 			if !ok {                            // get from zhihu
-				// if no replay; skip this day
+				// no Response， skip this day
 				if data = getBeforeData(key); data == "" {
 					break
 				}
@@ -177,26 +169,40 @@ func renderPages(days int, pages map[int]FinalData) {
 
 		finaldata.Useddata = useddata
 		finaldata.Pagemark = pagemark
-		pages[i] = finaldata
+
+		if pageJson, err := json.Marshal(finaldata); err == nil {
+			page := string(pageJson)
+			writeToPageDB(i, page)
+		}
 	}
+
+	memoreyCache = nil
 
 	downloadDayShareImg(newMainPages)
 }
 
-func autoUpdate(pages map[int]FinalData) {
+func autoUpdate() {
 
 	// init
 	days := 3
-	renderPages(days, pages)
+	renderPages(days)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
 	go func() {
 		for t := range ticker.C {
 			fmt.Println("renderPages at ", t)
-			renderPages(days, pages)
+			renderPages(days)
 		}
 	}()
 
+}
+
+func getPage(index int) FinalData {
+	var finaldata FinalData
+	data := QueryPageData(index)
+	json.Unmarshal([]byte(data), &finaldata)
+
+	return finaldata
 }
 
 // ----------------------------Download----------------------------------------------
@@ -269,7 +275,7 @@ func getBeforeData(date string) string {
 	url := "http://news.at.zhihu.com/api/1.2/news/before/" + date
 	data := getData(url)
 
-	writeToDB(atoi(date), data)
+	writeToDateDB(atoi(date), data)
 
 	return data
 }
@@ -280,67 +286,77 @@ func todayData() string {
 	return getData(url)
 }
 
-func QueryData() map[int]string {
-
-	memoryCache := make(map[int]string)
-
+func QuerryData(table string) *sql.Rows {
 	db, err := sql.Open("sqlite3", "./main.db")
 	checkErr(err)
 
-	rows, err := db.Query("SELECT * FROM datainfo")
+	rows, err := db.Query("SELECT * FROM " + table)
 	checkErr(err)
 
 	db.Close()
 
+	return rows
+}
+
+func QueryDateData() map[int]string {
+
+	rows := QuerryData("dateinfo")
+
+	var date int
+	var data string
+
+	memoryCache := make(map[int]string)
 	for rows.Next() {
-		var date int
-		var data string
-		err = rows.Scan(&date, &data)
-		memoryCache[date] = data
+		if err := rows.Scan(&date, &data); err == nil {
+			memoryCache[date] = data
+		}
 	}
 
 	return memoryCache
 }
 
-func QueryID(id int, data string) string {
+func QueryPageData(index int) string {
 
-	db, err := sql.Open("sqlite3", "./main.db")
-	checkErr(err)
+	rows := QuerryData("pageinfo")
 
-	rows, err := db.Query("SELECT * FROM id")
-	checkErr(err)
-
-	db.Close()
+	var id int
+	var data string
+	page := ""
 
 	for rows.Next() {
-		var index int
-		var data string
-		err = rows.Scan(&index, &data)
-		if id == index {
-			return data
+		if err := rows.Scan(&id, &data); err == nil && id == index {
+			page = data
 		}
 	}
 
-	return ""
+	return page
 }
 
-func writeToDB(date int, data string) {
+func writeToDB(table string, id int, data string) {
 
 	db, err := sql.Open("sqlite3", "./main.db")
 	checkErr(err)
-	//插入数据
-	stmt, err := db.Prepare("INSERT INTO datainfo(date, data) values(?,?)")
+
+	stmt, err := db.Prepare("REPLACE INTO " + table + "(id, data) values(?,?)")
 	checkErr(err)
 
-	res, err := stmt.Exec(date, data)
+	res, err := stmt.Exec(id, data)
 	checkErr(err)
 
-	id, err := res.LastInsertId()
+	index, err := res.LastInsertId()
 	checkErr(err)
 
-	fmt.Println(id)
+	fmt.Println(index)
 
 	db.Close()
+}
+
+func writeToDateDB(date int, data string) {
+	writeToDB("dateinfo", date, data)
+}
+
+func writeToPageDB(index int, data string) {
+	writeToDB("pageinfo", index, data)
 }
 
 // -----------------------------------Tools------------------------------------------
@@ -361,6 +377,7 @@ func idToUrl(id int) string {
 
 func filenameToShareImgUrl(filename string) string {
 	url := ""
+
 	if !strings.Contains(filename, "-") {
 		url = "http://d0.zhimg.com/" + strings.Replace(filename, "_", "/", 1)
 	} else {
@@ -372,7 +389,6 @@ func filenameToShareImgUrl(filename string) string {
 }
 
 func shareImgUrlToFilename(shareImgUrl string) string {
-
 	filename := ""
 
 	if strings.Contains(shareImgUrl, "http://d0.zhimg.com/") {

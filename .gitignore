@@ -3,3 +3,5 @@ static/img/*
 main.db
 test.go
 templates/test.tmpl
+log.txt
+main
