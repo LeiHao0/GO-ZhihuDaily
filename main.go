@@ -118,6 +118,10 @@ func zhihuDailyJson(str string) UsedData {
 func renderPages(days int) {
 
 	var pagemark []int
+
+	var newMainPages []MainPage
+	var finaldata FinalData
+
 	date := time.Now()
 
 	if date.Format("MST") == "UTC" {
@@ -130,11 +134,10 @@ func renderPages(days int) {
 		pagemark = append(pagemark, i)
 	}
 
-	var newMainPages []MainPage
-	var finaldata FinalData
-	var useddata []UsedData
+	finaldata.Pagemark = pagemark
 
 	for i := 1; i <= len(memoreyCache)/days; i += 1 {
+		var useddata []UsedData
 
 		if i == 1 && date.Format("15") > "07" {
 			if str := todayData(); str != "" {
@@ -168,7 +171,6 @@ func renderPages(days int) {
 		}
 
 		finaldata.Useddata = useddata
-		finaldata.Pagemark = pagemark
 
 		if pageJson, err := json.Marshal(finaldata); err == nil {
 			page := string(pageJson)
