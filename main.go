@@ -44,7 +44,7 @@ type MainPage struct {
 
 type FinalData struct {
 	Useddata []UsedData
-	Pagemark []int
+	Pagemark []string
 }
 
 var IMG = "static/img/"
@@ -64,8 +64,8 @@ func main() {
 	})
 
 	m.Get("/page/:id", func(params martini.Params, r render.Render) {
-
-		id := atoi(params["id"])
+		s := strings.Trim(params["id"], " .)(")
+		id := atoi(s)
 		r.HTML(200, "content", []interface{}{getPage(id)})
 	})
 
@@ -117,8 +117,6 @@ func zhihuDailyJson(str string) UsedData {
 
 func renderPages(days int) {
 
-	var pagemark []int
-
 	var newMainPages []MainPage
 	var finaldata FinalData
 
@@ -129,14 +127,28 @@ func renderPages(days int) {
 	}
 
 	memoreyCache := QueryDateData()
+	memoreyCacheLen := len(memoreyCache) / days
 
-	for i := 1; i <= len(memoreyCache)/days; i += 1 {
-		pagemark = append(pagemark, i)
-	}
+	for i := 1; i <= memoreyCacheLen; i += 1 {
 
-	finaldata.Pagemark = pagemark
+		var pagemark []string
+		if i-10 > 1 {
+			pagemark = append(pagemark, "1    ...  ")
+		}
+		for k, j := 0, i-10; k <= 20; k++ {
+			if j > 0 && j <= memoreyCacheLen {
+				s := itoa(j)
+				if j == i {
+					s = "( " + s + " )"
+				}
+				pagemark = append(pagemark, s)
+			}
+			j++
+		}
+		if i < memoreyCacheLen-10 {
+			pagemark = append(pagemark, "  ...    "+itoa(memoreyCacheLen))
+		}
 
-	for i := 1; i <= len(memoreyCache)/days; i += 1 {
 		var useddata []UsedData
 
 		if i == 1 && date.Format("15") > "07" {
@@ -170,6 +182,7 @@ func renderPages(days int) {
 			date = date.AddDate(0, 0, -1)
 		}
 
+		finaldata.Pagemark = pagemark
 		finaldata.Useddata = useddata
 
 		if pageJson, err := json.Marshal(finaldata); err == nil {
@@ -373,8 +386,12 @@ func atoi(s string) int {
 	return dateInt
 }
 
+func itoa(i int) string {
+	return strconv.Itoa(i)
+}
+
 func idToUrl(id int) string {
-	return "http://daily.zhihu.com/api/1.2/news/" + strconv.Itoa(id)
+	return "http://daily.zhihu.com/api/1.2/news/" + itoa(id)
 }
 
 func filenameToShareImgUrl(filename string) string {
