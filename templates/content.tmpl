@@ -8,32 +8,31 @@
 	{{with .Useddata}}
 	{{range .}}
 
-
-
-	<div class="date">
-		{{.Date}}
-	</div>
-
-	<div>
-		<ul id ="box" class="box">
+	<div class="post">
+		<div class="post-date">
+			<span class="post-date-week">Friday</span>
+			<span class="post-date-day">2014/5/16</span>
+			<!--需要把{{.Date}} 拆成两部分 -->
+		</div>
+		<div class="post-body">
 			{{range .MainPages}}
-			<a href="http://daily.zhihu.com/story/{{.Id}}" >
-				<li>
-					<img src='/img/croped/{{ .ShareImage }}'  alt='' class="image"/>
-					<p class="title" >{{ .Title }}</p>
-				</li>
-			</a>
+			<div class="item">
+				<a href="http://daily.zhihu.com/story/{{.Id}}" >
+					<img src='/img/croped/{{ .ShareImage }}'  alt=''/>
+					<span class='title'>{{ .Title }}</span>
+				</a>
+			</div>
 			{{end}}
-		</ul>
+		</div>
 	</div>
 
 	{{end}}
 
 	{{end}}
-
+</div>
 
 	{{with .Pagemark}}
-	<div class="pages">
+	<div id="page">
 
 		{{range .}}
 		<a href="/page/{{.}}">{{.}}</a>
@@ -43,8 +42,6 @@
 	{{end}}
 
 	{{end}}
-
-</div>
 {{template "footer"}} 
 
 {{end}}
