@@ -1,5 +1,4 @@
 body{
-    background: #B4DFE0;
     font-family: "微软雅黑";
 }
 html,body{
@@ -37,7 +36,7 @@ a{
 }
 .post-date{
     float:right;
-    background:#ffffff;
+    background:#B4DFE0;
     color:#363D3F;
     text-align:center;
     text-decoration:none;
@@ -67,11 +66,11 @@ a{
     height:200px;
     width:300px;
     overflow: hidden;
-    transition: all 1s ease-in-out;
+    -webkit-transition: all 0.3s ease-in-out;
 }
 
 .post-body .item:hover{
-    -webkit-transform: rotateY(180deg);
+    -webkit-transform:scale(1.1,1.1); 
 }
 .post-body .item a {
     display: block;
@@ -79,11 +78,6 @@ a{
 }
 .post-body img{
     width: 300px;
-    filter: grayscale(1);
-    -webkit-filter: grayscale(1);
-    -moz-filter: grayscale(1);
-    -o-filter: grayscale(1);
-    -ms-filter: grayscale(1);
 }
 
 .post-body .title{
@@ -95,11 +89,6 @@ a{
 
 
 .post-body .item:hover img{
-    filter: grayscale(0);
-    -webkit-filter: grayscale(0);
-    -moz-filter: grayscale(0);
-    -o-filter: grayscale(0);
-    -ms-filter: grayscale(0);
     
 }
 
@@ -114,14 +103,12 @@ a{
 
 #page a{
     color: #009dd7;;
-    text-shadow: 0px 2px 1px rgba(255, 255, 255,255);
 }
 
 
 #foot{
     text-align: center;
     margin: 10px auto;
-    text-shadow: 0px 2px 1px rgba(255, 255, 255,255);
 }
 
 #foot a{
