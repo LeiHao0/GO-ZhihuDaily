@@ -7,7 +7,8 @@ GO-ZhihuDaily
 
 
 ---
-这里是 #[Misa](http://www.cnblogs.com/misadancer/) 的 ReadMe
+这里是 [Misa](http://www.cnblogs.com/misadancer/) 的 ReadMe
+
 （打个广告，戳上面的链接可进入本人博客  ^^ ）
 ---
 
