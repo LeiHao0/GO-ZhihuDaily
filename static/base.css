@@ -9,14 +9,13 @@ li{
     list-style:none;
 }
 a{
-    color:#000;
+    color:#fff;
     text-decoration:none;
 }
 
 #header{
     background: #009dd7;
     filter:alpha(opacity=50);-moz-opacity:0.6;-kHTML-opacity: 0.6;opacity: 0.8;
-    
     position:fixed!important;width:100%;z-index:999;top:0px;
     _position: absolute;                                       /*IE6 用absolute模拟fixed*/
     _top: expression(documentElement.scrollTop + 0 + "px"); 
@@ -66,11 +65,13 @@ a{
     height:200px;
     width:300px;
     overflow: hidden;
-    -webkit-transition: all 0.3s ease-in-out;
+    -webkit-transition: all 0.4s ease-in-out;
+    -webkit-transform: rotateY(180deg);
 }
 
 .post-body .item:hover{
-    -webkit-transform:scale(1.1,1.1); 
+    /* -webkit-transform:scale(1.1,1.1);  */
+    box-shadow: 3px 3px 4px #009dd7;
 }
 .post-body .item a {
     display: block;
@@ -82,7 +83,7 @@ a{
 
 .post-body .title{
     position: absolute;
-    top:170px;
+    top:150px;
     left:5px;
     text-shadow: 0px 1px 2px rgba(0,0,0,0.6);
 }

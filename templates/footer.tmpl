@@ -18,6 +18,38 @@
   ga('create', 'UA-48347908-1', 'ahorn.me');
   ga('send', 'pageview');
 
+/******
+ * 出场动画
+ * By Misa @ 2014.5.19
+ *****/
+
+window.onload = function() {
+  var items = document.querySelectorAll('.item'),
+  l = items.length;
+
+  var turnOn = function(i) {
+    if(i < l) {
+      items[i].style.webkitTransform = 'rotateY(0deg)'
+      i++
+      setTimeout(function() {
+        turnOn(i)
+      }, 100)
+    } else {
+      return
+    } 
+  }
+
+  turnOn(0)
+}
+
+// 渲染日期
+var week = document.querySelectorAll('.post-date-week'),
+day = document.querySelectorAll('.post-date-day'),
+date = document.querySelectorAll('.dateString')
+for(var i = week.length; i > 0; i--) {
+  week[i-1].innerHTML = date[i-1].innerHTML.split(' ')[1];
+  day[i-1].innerHTML = date[i-1].innerHTML.split(' ')[0]
+}
 </script>
 
 </body>
