@@ -1,5 +1,5 @@
 body{
-    font-family: "微软雅黑";
+    font-family: 'Helvetica Neue',"微软雅黑";
 }
 html,body{
     margin: 0;
@@ -66,12 +66,12 @@ a{
     width:300px;
     overflow: hidden;
     -webkit-transition: all 0.4s ease-in-out;
-    -webkit-transform: rotateY(180deg);
+    -webkit-transform: rotateY(360deg);
 }
 
 .post-body .item:hover{
     /* -webkit-transform:scale(1.1,1.1);  */
-    box-shadow: 3px 3px 4px #009dd7;
+    /*box-shadow: 3px 3px 4px #ccc;*/
 }
 .post-body .item a {
     display: block;
@@ -83,9 +83,11 @@ a{
 
 .post-body .title{
     position: absolute;
-    top:150px;
-    left:5px;
-    text-shadow: 0px 1px 2px rgba(0,0,0,0.6);
+    top:120px;
+    left:10px;
+	right:10px;
+	font-size:19px;
+    text-shadow: 0px 1px 2px rgba(0,0,0,0.9);
 }
 
 
@@ -94,7 +96,7 @@ a{
 }
 
 .post-body .item:hover .title{
-    color: #009dd7;
+    color: #ccc;
 }
 
 #page{
@@ -103,7 +105,7 @@ a{
 }
 
 #page a{
-    color: #009dd7;;
+    color: #009dd7;
 }
 
 
