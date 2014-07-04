@@ -24,6 +24,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"syscall"
 	//"sync"
 	"encoding/json"
 	"time"
@@ -223,8 +224,9 @@ func getPage(index int) FinalData {
 // ----------------------------Download----------------------------------------------
 
 func Exist(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil || os.IsExist(err)
+
+	err := syscall.Access(filename, syscall.F_OK)
+	return err == nil
 }
 
 func download(url string) {
