@@ -27,10 +27,19 @@
 window.onload = function() {
   var items = document.querySelectorAll('.item'),
   l = items.length;
-
+	function addClass(obj,claName){
+	  var cla=obj.className.split(" ");
+	  for(var i=0;i<cla.length;i++)
+	  {
+	    if(cla[i]==claName)
+	    return;
+	  }
+	  cla.push(claName);
+	  obj.className=cla.join(" ");
+	}
   var turnOn = function(i) {
     if(i < l) {
-      items[i].style.webkitTransform = 'rotateX(0deg)'
+		addClass(items[i],"itemUp")
       i++
       setTimeout(function() {
         turnOn(i)
@@ -40,7 +49,7 @@ window.onload = function() {
     } 
   }
 
-  turnOn(0)
+//  turnOn(0)
 }
 
 // 渲染日期

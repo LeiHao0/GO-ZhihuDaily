@@ -58,6 +58,22 @@ a{
     line-height:60px;
 }
 
+@-webkit-keyframes fadeInUp{
+0%{opacity:0;
+-webkit-transform:translateY(20px)}
+100%{opacity:1;
+-webkit-transform:translateY(0)}
+}
+@-moz-keyframes fadeInUp{
+0%{opacity:0;
+-moz-transform:translateY(20px)}
+100%{opacity:1;
+-moz-transform:translateY(0)}
+}
+.itemUp{
+	-webkit-animation:fadeInUp 1s .2s ease both;
+	-moz-animation:fadeInUp 1s .2s ease both;
+}
 .post-body .item {
     display: inline-block;
     margin-right:5px;
@@ -65,8 +81,9 @@ a{
     height:200px;
     width:300px;
     overflow: hidden;
-    -webkit-transition: all 0.4s ease-in-out;
-    -webkit-transform: rotateX(360deg);
+    opacity:0;
+	-webkit-animation:fadeInUp 1s .2s ease both;
+	-moz-animation:fadeInUp 1s .2s ease both;
 }
 
 .post-body .item:hover{
