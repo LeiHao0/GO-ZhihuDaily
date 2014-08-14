@@ -64,28 +64,16 @@ func main() {
 		r.HTML(200, "content", []interface{}{getPage(1)})
 	})
 
-	m.Get("/api", func(r render.Render) {
-		r.JSON(200, []interface{}{"content", getPage(1)})
-	})
-
 	m.Get("/api/:id", func(params martini.Params, r render.Render) {
 		s := strings.Trim(params["id"], " .)(")
 		id := atoi(s)
-		r.JSON(200, []interface{}{"content", getPage(id)})
+		r.JSON(200, getPage(id))
 	})
 
 	m.Get("/page/:id", func(params martini.Params, r render.Render) {
 		s := strings.Trim(params["id"], " .)(")
 		id := atoi(s)
 		r.HTML(200, "content", []interface{}{getPage(id)})
-	})
-
-	m.Get("/date/**", func(r render.Render) {
-		r.HTML(200, "content", []interface{}{getPage(1)})
-	})
-
-	m.Get("/url/**", func(r render.Render) {
-		r.HTML(200, "content", []interface{}{getPage(1)})
 	})
 
 	http.ListenAndServe("0.0.0.0:8000", m)
