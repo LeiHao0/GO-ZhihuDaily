@@ -1,6 +1,5 @@
-shareimage.txt
-static/img/*
-main.db
+static/img/croped/*
+*.bak.*
 test.go
 templates/test.tmpl
 log.txt

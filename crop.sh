@@ -1,8 +1,7 @@
 #/bin/sh
+mkdir -p static/img/croped
 
 cd static/img
-
-mkdir -p croped
 
 for img in `ls *.jpg`
 do

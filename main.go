@@ -127,6 +127,14 @@ func renderPages(days int) {
 
 	memoreyCache := QueryDateData()
 	memoreyCacheLen := len(memoreyCache) / days
+	flag := memoreyCacheLen
+	if flag <= 0 {
+		// first init & download all data
+		getAllData()
+
+		memoreyCache = QueryDateData()
+		memoreyCacheLen = len(memoreyCache) / days
+	}
 
 	for i := 1; i <= memoreyCacheLen; i += 1 {
 
@@ -173,7 +181,7 @@ func renderPages(days int) {
 			beforeday := zhihuDailyJson(data)
 
 			// comment this `if` if you are first `go run main.go`
-			if i == 1 && j == 0 {
+			if flag <= 0 || (i == 1 && j == 0) {
 				newMainPages = append(newMainPages, beforeday.MainPages...)
 			} // end
 			useddata = append(useddata, beforeday)
@@ -220,6 +228,16 @@ func getPage(index int) FinalData {
 }
 
 // ----------------------------Download----------------------------------------------
+
+func getAllData() {
+	date := time.Now()
+	firstDate, _ := time.Parse("20060102", "20130520")
+
+	for ; date.After(firstDate); date = date.AddDate(0, 0, -1) {
+		getBeforeData(date.Format("20060102"))
+	}
+
+}
 
 func Exist(filename string) bool {
 
