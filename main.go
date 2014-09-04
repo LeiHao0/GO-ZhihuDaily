@@ -180,8 +180,8 @@ func renderPages(days int) {
 
 			beforeday := zhihuDailyJson(data)
 
-			// comment this `if` if you are first `go run main.go`
-			if flag <= 0 || (i == 1 && j == 0) {
+			// remove /*flag*/ comment if you want to download all images
+			if /*flag <= 0 || (*/ i == 1 && j == 0 /*)*/ {
 				newMainPages = append(newMainPages, beforeday.MainPages...)
 			} // end
 			useddata = append(useddata, beforeday)
@@ -413,28 +413,15 @@ func idToUrl(id int) string {
 }
 
 func filenameToShareImgUrl(filename string) string {
-	url := ""
-
-	if !strings.Contains(filename, "-") {
-		url = "http://d0.zhimg.com/" + strings.Replace(filename, "_", "/", 1)
-	} else {
-		url = strings.Replace(filename, "_", "/", -1)
-		url = strings.Replace(url, "-", ":", -1)
-	}
+	url := strings.Replace(filename, "_", "/", -1)
+	url = strings.Replace(url, "-", ":", -1)
 
 	return url
 }
 
 func shareImgUrlToFilename(shareImgUrl string) string {
-	filename := ""
-
-	if strings.Contains(shareImgUrl, "http://d0.zhimg.com/") {
-		str := strings.Replace(shareImgUrl, "http://d0.zhimg.com/", "", 1)
-		filename = strings.Replace(str, "/", "_", 1)
-	} else {
-		filename = strings.Replace(shareImgUrl, "/", "_", -1)
-		filename = strings.Replace(filename, ":", "-", -1)
-	}
+	filename := strings.Replace(shareImgUrl, "/", "_", -1)
+	filename = strings.Replace(filename, ":", "-", -1)
 
 	return filename
 }

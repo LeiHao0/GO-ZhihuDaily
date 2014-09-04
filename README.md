@@ -1,48 +1,76 @@
 GO-ZhihuDaily
 =============
 
-#~~[知乎日报 Web版（GoLang实现）](http://zhihudaily.ahorn.me/)~~
+#[知乎日报 Web版（GoLang实现）](http://zhihudaily.ahorn.me/)
 
-~~点上面的链接可以跳转~~ ( VPS 到期尚未续费 )  
+点上面的链接可以跳转
 
 写这个的最初目的是因为PC上没有一个很好的阅读知乎日报的方式    
 即那种一眼望过去，几天内的内容尽收眼底，然后点开自己感兴趣的 Title 继续阅读  
 
-`cd GO-ZhihuDaily`  
-`go run  main.go`  
+##USAGE
 
-浏览器url:   
+####ImageMagick
+需要用到`ImageMagick` 的 `convert` 命令来裁剪官方图片
+
+Linux:  
+```bash
+yum install imagemagick
+```
+
+OSX:  
+[ImageMagick](http://www.imagemagick.org/script/binary-releases.php#macosx)
+
+####启动：
+
+```bash
+cd GO-ZhihuDaily
+go run main.go  
+```
+####浏览器 URL:   
 `0.0.0.0:8000`   
 
----
-
-声明：  
-小伙伴的 DNS 服务器被墙（他做了神马？）  
-
-1. 可设置为Google的 8.8.8.8，同时可以防止日常上网发生的 DNS 污染
-2. 直接访问 VPS 的 IP：106.186.28.159:8000
+####自带 API:  
+`http://zhihudaily.ahorn.me/api/1`
+1 可以是 2 3 4 ...
 
 ---
 
-API（点击看大图）:
+##API（点击看大图）:
 
 ![](http://cl.ly/image/013N0v0H2g3i/WEB%E7%9F%A5%E4%B9%8E%E6%97%A5%E6%8A%A5.png)  
 
 红色的已作废，蓝色的可以用  
 
----
-
-**License**
+##License
 
 GNU GENERAL PUBLIC LICENSE
 
 - - -
 
 1. 感谢 @[faceair](https://github.com/faceair/zhihudaily)，他做了最早的web版(PHP)（API就是从他的代码里找到的）
-2. SQLite存储API返回的JSON数据，减小访问官网次数
+2. SQLite 存储 API 返回的 JSON 数据，减小访问官网次数
 3. 每小时更新一次当天数据
 4. [Martini](https://github.com/codegangsta/martini) 框架
-5. 蹭朋友的VPS [貌似十分不稳定，动不动就502了，（好吧，是我的小程序不稳定）]  
+5. 蹭朋友的 VPS ~~[貌似十分不稳定，动不动就 502 了，（好吧，是我的小程序不稳定）]~~  
+
+
+##开发日志
+2014-09-01 09:41:36
+
+服务已恢复  
+
+由于之前缓存的图片以及数据库全部木有了   
+这次需要首次启动   
+
+然后...我就知道 `fork` 这个项目的孩纸们的心情了 →_→  
+对不住泥们了  
+
+首先木有 `main.db`，我只好又用 `sqlite3` 创建了一个，以及两个 `table` （之前其实是有代码的，服务稳定后，我就删掉了...）  
+
+然后如果整个数据库为空，也木有去日爆官方去重新申请数据  
+
+现在这些问题已修复  
 
 ---
 
