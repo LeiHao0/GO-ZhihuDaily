@@ -5,7 +5,7 @@
 <div id="foot">  
 	<ul>
 		<li>© 2013 知乎 · Powered by <a href="http://artwalk.github.io/">Artwalk</a> 
-		& 可爱(pà)的前端<a href="http://www.cnblogs.com/misadancer/">Misa</a></li>
+		& <a href="https://github.com/ms-moon">小环</a></li>
 		<li>给个星星吧~ ＞▽＜ <a href="https://github.com/Artwalk/GO-ZhihuDaily">Github</a></li>	
 	</ul>
 </div>  
@@ -23,7 +23,7 @@
  * 出场动画
  * By Misa @ 2014.5.19
  *****/
-
+/*
 window.onload = function() {
   var items = document.querySelectorAll('.item'),
   l = items.length;
@@ -51,10 +51,11 @@ window.onload = function() {
 
 //  turnOn(0)
 }
+*/
 
 // 渲染日期
-var week = document.querySelectorAll('.post-date-week'),
-day = document.querySelectorAll('.post-date-day'),
+var week = document.querySelectorAll('.week'),
+day = document.querySelectorAll('.day'),
 date = document.querySelectorAll('.dateString')
 for(var i = week.length; i > 0; i--) {
   week[i-1].innerHTML = date[i-1].innerHTML.split(' ')[1];

@@ -206,7 +206,7 @@ func renderPages(days int) {
 func autoUpdate() {
 
 	// init
-	days := 2
+	days := 5
 	renderPages(days)
 
 	ticker := time.NewTicker(time.Hour) // update every per hour
