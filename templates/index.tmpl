@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>知乎日报</title>
+	<link type="text/css" rel="stylesheet" href="/static/base.css"/>
+</head> 
+<body>
+
+	<div id="header">
+		<a href="http://zhihudaily.ahorn.me/" title="知乎日报">
+			<img src="/static/zhihu_logo.png" class="main-wrap"/>
+		</a>
+	</div>
+
+	<div id="content">
+
+		{{range .}}
+
+		{{with .Useddata}}
+		{{range .}}
+
+		<div class="post">
+			<div class="post-date">
+				<span style='display:none' class='dateString'>{{.Date}}</span>
+				<span class="post-date-week">Friday</span>
+				<span class="post-date-day">2014/5/16</span>
+			</div>
+			<div class="post-body">
+				{{range .MainPages}}
+				<div class="item">
+					<a href="http://daily.zhihu.com/story/{{.Id}}" >
+						<img src='/static/img/croped/{{ .ShareImage }}'  alt=''/>
+						<span class='title'>{{ .Title }}</span>
+					</a>
+				</div>
+				{{end}}
+			</div>
+		</div>
+
+		{{end}}
+
+		{{end}}
+	</div>
+
+	{{with .Pagemark}}
+	<div id="page">
+
+		{{range .}}
+		<a href="/page/{{.}}">{{.}}</a>
+		{{end}}
+	</div>
+
+	{{end}}
+
+	{{end}}
+	<div id="foot">  
+		<ul>
+			<li>© 2013 知乎 · Powered by <a href="http://artwalk.github.io/">Artwalk</a> 
+				& 可爱(pà)的前端<a href="http://www.cnblogs.com/misadancer/">Misa</a></li>
+				<li>给个星星吧~ ＞▽＜ <a href="https://github.com/Artwalk/GO-ZhihuDaily">Github</a></li>	
+			</ul>
+		</div>  
+
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-48347908-1', 'ahorn.me');
+			ga('send', 'pageview');
+
+/******
+ * 出场动画
+ * By Misa @ 2014.5.19
+ *****/
+
+ window.onload = function() {
+ 	var items = document.querySelectorAll('.item'),
+ 	l = items.length;
+ 	function addClass(obj,claName){
+ 		var cla=obj.className.split(" ");
+ 		for(var i=0;i<cla.length;i++)
+ 		{
+ 			if(cla[i]==claName)
+ 				return;
+ 		}
+ 		cla.push(claName);
+ 		obj.className=cla.join(" ");
+ 	}
+ 	var turnOn = function(i) {
+ 		if(i < l) {
+ 			addClass(items[i],"itemUp")
+ 			i++
+ 			setTimeout(function() {
+ 				turnOn(i)
+ 			}, 100)
+ 		} else {
+ 			return
+ 		} 
+ 	}
+
+//  turnOn(0)
+}
+
+// 渲染日期
+var week = document.querySelectorAll('.post-date-week'),
+day = document.querySelectorAll('.post-date-day'),
+date = document.querySelectorAll('.dateString')
+for(var i = week.length; i > 0; i--) {
+	week[i-1].innerHTML = date[i-1].innerHTML.split(' ')[1];
+	day[i-1].innerHTML = date[i-1].innerHTML.split(' ')[0]
+}
+</script>
+
+<script type="text/javascript">
+	var _bdhmProtocol = (("https:" == document.location.protocol) ? " https://" : " http://");
+	document.write(unescape("%3Cscript src='" + _bdhmProtocol + "hm.baidu.com/h.js%3Fc4711f9b0594937b8fb357d90229692f' type='text/javascript'%3E%3C/script%3E"));
+</script>
+
+</body>
+</html>

@@ -59,9 +59,8 @@ func main() {
 	// m := martini.Classic()
 	// m.Use(martini.Static("static"))
 	// m.Use(render.Renderer())
-	// router.Static("/", "./static")
+	router.Static("/static", "./static")
 	router.StaticFile("/favicon.ico", "./static/favicon.ico")
-	router.StaticFile("/base.css", "./static/base.css")
 
 	// m.Get("/", func(r render.Render) {
 	// 	r.HTML(200, "content", []interface{}{getPage(1)})
@@ -69,11 +68,8 @@ func main() {
 	router.LoadHTMLGlob("templates/*")
 	//router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "content.tmpl", gin.H{
-			"content": []interface{}{getPage(1)},
-		})
+		c.HTML(http.StatusOK, "index.tmpl", []interface{}{getPage(1)})
 	})
-	router.Run(":8080")
 
 	// m.Get("/api/:id", func(params martini.Params, r render.Render) {
 	// 	s := strings.Trim(params["id"], " .)(")
@@ -87,8 +83,13 @@ func main() {
 	// 	r.HTML(200, "content", []interface{}{getPage(id)})
 	// })
 
-	// http.ListenAndServe("0.0.0.0:8000", m)
-	// m.Run()
+	router.GET("/page/:id", func(c *gin.Context) {
+		s := strings.Trim(c.Param("id"), " .)(")
+		id := atoi(s)
+		c.HTML(http.StatusOK, "index.tmpl", []interface{}{getPage(id)})
+	})
+
+	router.Run(":8080")
 }
 
 //------------------------------------Pages------------------------------------------

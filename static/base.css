@@ -53,9 +53,9 @@ a{
 }
 
 .post-date-week{
-    font-size:23px;
+    font-size:30px;
     display:block;
-    line-height:50px;
+    line-height:60px;
 }
 
 @-webkit-keyframes fadeInUp{
