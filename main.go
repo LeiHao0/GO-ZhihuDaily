@@ -12,12 +12,8 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
-	"github.com/bitly/go-simplejson"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
-	_ "github.com/mattn/go-sqlite3"
-	"github.com/shxsun/go-sh"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -25,9 +21,12 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
-	//"sync"
-	"encoding/json"
 	"time"
+
+	"github.com/bitly/go-simplejson"
+	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/shxsun/go-sh"
 )
 
 // Golang FormatTime: 20060102 15:04:05
@@ -56,28 +55,40 @@ func main() {
 
 	autoUpdate()
 
-	m := martini.Classic()
-	m.Use(martini.Static("static"))
-	m.Use(render.Renderer())
+	router := gin.Default()
+	// m := martini.Classic()
+	// m.Use(martini.Static("static"))
+	// m.Use(render.Renderer())
+	// router.Static("/", "./static")
+	router.StaticFile("/favicon.ico", "./static/favicon.ico")
+	router.StaticFile("/base.css", "./static/base.css")
 
-	m.Get("/", func(r render.Render) {
-		r.HTML(200, "content", []interface{}{getPage(1)})
+	// m.Get("/", func(r render.Render) {
+	// 	r.HTML(200, "content", []interface{}{getPage(1)})
+	// })
+	router.LoadHTMLGlob("templates/*")
+	//router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "content.tmpl", gin.H{
+			"content": []interface{}{getPage(1)},
+		})
 	})
+	router.Run(":8080")
 
-	m.Get("/api/:id", func(params martini.Params, r render.Render) {
-		s := strings.Trim(params["id"], " .)(")
-		id := atoi(s)
-		r.JSON(200, getPage(id))
-	})
+	// m.Get("/api/:id", func(params martini.Params, r render.Render) {
+	// 	s := strings.Trim(params["id"], " .)(")
+	// 	id := atoi(s)
+	// 	r.JSON(200, getPage(id))
+	// })
 
-	m.Get("/page/:id", func(params martini.Params, r render.Render) {
-		s := strings.Trim(params["id"], " .)(")
-		id := atoi(s)
-		r.HTML(200, "content", []interface{}{getPage(id)})
-	})
+	// m.Get("/page/:id", func(params martini.Params, r render.Render) {
+	// 	s := strings.Trim(params["id"], " .)(")
+	// 	id := atoi(s)
+	// 	r.HTML(200, "content", []interface{}{getPage(id)})
+	// })
 
-	http.ListenAndServe("0.0.0.0:8000", m)
-	m.Run()
+	// http.ListenAndServe("0.0.0.0:8000", m)
+	// m.Run()
 }
 
 //------------------------------------Pages------------------------------------------
