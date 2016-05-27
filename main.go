@@ -56,37 +56,25 @@ func main() {
 	autoUpdate()
 
 	router := gin.Default()
-	// m := martini.Classic()
-	// m.Use(martini.Static("static"))
-	// m.Use(render.Renderer())
+
 	router.Static("/static", "./static")
 	router.StaticFile("/favicon.ico", "./static/favicon.ico")
 
-	// m.Get("/", func(r render.Render) {
-	// 	r.HTML(200, "content", []interface{}{getPage(1)})
-	// })
 	router.LoadHTMLGlob("templates/*")
-	//router.LoadHTMLFiles("templates/template1.html", "templates/template2.html")
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tmpl", []interface{}{getPage(1)})
 	})
-
-	// m.Get("/api/:id", func(params martini.Params, r render.Render) {
-	// 	s := strings.Trim(params["id"], " .)(")
-	// 	id := atoi(s)
-	// 	r.JSON(200, getPage(id))
-	// })
-
-	// m.Get("/page/:id", func(params martini.Params, r render.Render) {
-	// 	s := strings.Trim(params["id"], " .)(")
-	// 	id := atoi(s)
-	// 	r.HTML(200, "content", []interface{}{getPage(id)})
-	// })
 
 	router.GET("/page/:id", func(c *gin.Context) {
 		s := strings.Trim(c.Param("id"), " .)(")
 		id := atoi(s)
 		c.HTML(http.StatusOK, "index.tmpl", []interface{}{getPage(id)})
+	})
+
+	router.GET("/api/:id", func(c *gin.Context) {
+		s := strings.Trim(c.Param("id"), " .)(")
+		id := atoi(s)
+		c.JSON(http.StatusOK, []interface{}{getPage(id)})
 	})
 
 	router.Run(":8080")
