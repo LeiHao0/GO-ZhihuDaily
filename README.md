@@ -28,7 +28,7 @@ cd GO-ZhihuDaily
 go run main.go  
 ```
 ####浏览器 URL:   
-`0.0.0.0:8000`   
+`0.0.0.0:8080`   
 
 ####自带 API:  
 `http://zhihudaily.ahorn.me/api/1`
@@ -51,7 +51,7 @@ GNU GENERAL PUBLIC LICENSE
 1. 感谢 @[faceair](https://github.com/faceair/zhihudaily)，他做了最早的web版(PHP)（API就是从他的代码里找到的）
 2. SQLite 存储 API 返回的 JSON 数据，减小访问官网次数
 3. 每小时更新一次当天数据
-4. [Martini](https://github.com/codegangsta/martini) 框架
+4. ~~[Martini](https://github.com/codegangsta/martini)~~ [Gin](https://github.com/gin-gonic/gin) 框架
 5. 蹭朋友的 VPS ~~[貌似十分不稳定，动不动就 502 了，（好吧，是我的小程序不稳定）]~~  
 
 
